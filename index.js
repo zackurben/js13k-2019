@@ -3,13 +3,11 @@ let glCanvas = null;
 
 // Aspect ratio and coordinate system
 // details
-
 let aspectRatio;
 let currentRotation = [0, 1];
 let currentScale = [1.0, 1.0];
 
 // Vertex information
-
 let vertexArray;
 let vertexBuffer;
 let vertexNumComponents;
@@ -17,16 +15,14 @@ let vertexCount;
 
 // Rendering data shared with the
 // scalers.
-
 let uScalingFactor;
 let uGlobalColor;
 let uRotationVector;
 let aVertexPosition;
 
 // Animation timing
-
 let previousTime = 0.0;
-let degreesPerSecond = 90.0;
+let degreesPerSecond = 0.0;
 window.addEventListener('load', startup, false);
 
 function startup() {
@@ -36,11 +32,34 @@ function startup() {
   const shaderSet = [
     {
       type: gl.VERTEX_SHADER,
-      id: 'vertex-shader'
+      value: `
+      attribute vec2 aVertexPosition;
+      uniform vec2 uScalingFactor;
+      uniform vec2 uRotationVector;
+
+      void main() {
+        vec2 rotatedPosition = vec2(
+          aVertexPosition.x * uRotationVector.y + aVertexPosition.y * uRotationVector.x,
+          aVertexPosition.y * uRotationVector.y - aVertexPosition.x * uRotationVector.x
+        );
+
+        gl_Position = vec4(rotatedPosition * uScalingFactor, 0.0, 1.0);
+      }
+      `
     },
     {
       type: gl.FRAGMENT_SHADER,
-      id: 'fragment-shader'
+      value: `
+      #ifdef GL_ES
+        precision highp float;
+      #endif
+
+      uniform vec4 uGlobalColor;
+
+      void main() {
+        gl_FragColor = uGlobalColor;
+      }
+      `
     }
   ];
 
@@ -81,9 +100,8 @@ function startup() {
 function buildShaderProgram(shaderInfo) {
   let program = gl.createProgram();
 
-  shaderInfo.forEach(function(desc) {
-    let shader = compileShader(desc.id, desc.type);
-
+  shaderInfo.forEach(({ value, type }) => {
+    let shader = compileShader(value, type);
     if (shader) {
       gl.attachShader(program, shader);
     }
@@ -99,10 +117,8 @@ function buildShaderProgram(shaderInfo) {
   return program;
 }
 
-function compileShader(id, type) {
-  let code = document.getElementById(id).firstChild.nodeValue;
+function compileShader(code, type) {
   let shader = gl.createShader(type);
-
   gl.shaderSource(shader, code);
   gl.compileShader(shader);
 
@@ -152,7 +168,7 @@ function animateScene() {
 
   gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
 
-  window.requestAnimationFrame(function(currentTime) {
+  window.requestAnimationFrame(currentTime => {
     let deltaAngle = ((currentTime - previousTime) / 1000.0) * degreesPerSecond;
 
     currentAngle = (currentAngle + deltaAngle) % 360;
