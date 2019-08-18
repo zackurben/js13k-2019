@@ -27,20 +27,20 @@ let aVertexPosition;
 
 let previousTime = 0.0;
 let degreesPerSecond = 90.0;
-window.addEventListener("load", startup, false);
+window.addEventListener('load', startup, false);
 
 function startup() {
-  glCanvas = document.getElementById("glcanvas");
-  gl = glCanvas.getContext("webgl");
+  glCanvas = document.getElementById('glcanvas');
+  gl = glCanvas.getContext('webgl');
 
   const shaderSet = [
     {
       type: gl.VERTEX_SHADER,
-      id: "vertex-shader"
+      id: 'vertex-shader'
     },
     {
       type: gl.FRAGMENT_SHADER,
-      id: "fragment-shader"
+      id: 'fragment-shader'
     }
   ];
 
@@ -92,7 +92,7 @@ function buildShaderProgram(shaderInfo) {
   gl.linkProgram(program);
 
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.log("Error linking shader program:");
+    console.log('Error linking shader program:');
     console.log(gl.getProgramInfoLog(program));
   }
 
@@ -109,7 +109,7 @@ function compileShader(id, type) {
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     console.log(
       `Error compiling ${
-        type === gl.VERTEX_SHADER ? "vertex" : "fragment"
+        type === gl.VERTEX_SHADER ? 'vertex' : 'fragment'
       } shader:`
     );
     console.log(gl.getShaderInfoLog(shader));
@@ -128,9 +128,9 @@ function animateScene() {
 
   gl.useProgram(shaderProgram);
 
-  uScalingFactor = gl.getUniformLocation(shaderProgram, "uScalingFactor");
-  uGlobalColor = gl.getUniformLocation(shaderProgram, "uGlobalColor");
-  uRotationVector = gl.getUniformLocation(shaderProgram, "uRotationVector");
+  uScalingFactor = gl.getUniformLocation(shaderProgram, 'uScalingFactor');
+  uGlobalColor = gl.getUniformLocation(shaderProgram, 'uGlobalColor');
+  uRotationVector = gl.getUniformLocation(shaderProgram, 'uRotationVector');
 
   gl.uniform2fv(uScalingFactor, currentScale);
   gl.uniform2fv(uRotationVector, currentRotation);
@@ -138,7 +138,7 @@ function animateScene() {
 
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
-  aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+  aVertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
 
   gl.enableVertexAttribArray(aVertexPosition);
   gl.vertexAttribPointer(

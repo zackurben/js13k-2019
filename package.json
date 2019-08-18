@@ -1,0 +1,17 @@
+{
+  "name": "js13k-2019",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "serve",
+    "prettier": "prettier --single-quote --write \"*.{js,html}\""
+  },
+  "author": "Zack Urben <zackurben@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "prettier": "^1.18.2",
+    "serve": "^11.1.0"
+  }
+}
