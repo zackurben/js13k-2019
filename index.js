@@ -50,10 +50,7 @@ function startup() {
     {
       type: gl.FRAGMENT_SHADER,
       value: `
-      #ifdef GL_ES
-        precision highp float;
-      #endif
-
+      precision mediump float;
       uniform vec4 uGlobalColor;
 
       void main() {
@@ -72,14 +69,19 @@ function startup() {
   vertexArray = new Float32Array([
     -0.5,
     0.5,
+
     0.5,
     0.5,
-    0.5,
-    -0.5,
-    -0.5,
-    0.5,
+
     0.5,
     -0.5,
+
+    -0.5,
+    0.5,
+    
+    0.5,
+    -0.5,
+
     -0.5,
     -0.5
   ]);
@@ -147,16 +149,14 @@ function animateScene() {
   uScalingFactor = gl.getUniformLocation(shaderProgram, 'uScalingFactor');
   uGlobalColor = gl.getUniformLocation(shaderProgram, 'uGlobalColor');
   uRotationVector = gl.getUniformLocation(shaderProgram, 'uRotationVector');
+  aVertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
 
   gl.uniform2fv(uScalingFactor, currentScale);
   gl.uniform2fv(uRotationVector, currentRotation);
   gl.uniform4fv(uGlobalColor, [0.1, 0.7, 0.2, 1.0]);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
-  aVertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-
   gl.enableVertexAttribArray(aVertexPosition);
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.vertexAttribPointer(
     aVertexPosition,
     vertexNumComponents,
@@ -172,7 +172,6 @@ function animateScene() {
     let deltaAngle = ((currentTime - previousTime) / 1000.0) * degreesPerSecond;
 
     currentAngle = (currentAngle + deltaAngle) % 360;
-
     previousTime = currentTime;
     animateScene();
   });
