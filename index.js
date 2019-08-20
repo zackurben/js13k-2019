@@ -1,178 +1,165 @@
-let gl = null;
-let glCanvas = null;
-
-// Aspect ratio and coordinate system
-// details
-let aspectRatio;
-let currentRotation = [0, 1];
-let currentScale = [1.0, 1.0];
-
-// Vertex information
-let vertexArray;
-let vertexBuffer;
-let vertexNumComponents;
-let vertexCount;
-
-// Rendering data shared with the
-// scalers.
-let uScalingFactor;
-let uGlobalColor;
-let uRotationVector;
-let aVertexPosition;
-
-// Animation timing
-let previousTime = 0.0;
-let degreesPerSecond = 0.0;
-window.addEventListener('load', startup, false);
-
-function startup() {
-  glCanvas = document.getElementById('glcanvas');
-  gl = glCanvas.getContext('webgl');
-
-  const shaderSet = [
-    {
-      type: gl.VERTEX_SHADER,
-      value: `
-      attribute vec2 aVertexPosition;
-      uniform vec2 uScalingFactor;
-      uniform vec2 uRotationVector;
-
-      void main() {
-        vec2 rotatedPosition = vec2(
-          aVertexPosition.x * uRotationVector.y + aVertexPosition.y * uRotationVector.x,
-          aVertexPosition.y * uRotationVector.y - aVertexPosition.x * uRotationVector.x
-        );
-
-        gl_Position = vec4(rotatedPosition * uScalingFactor, 0.0, 1.0);
-      }
-      `
-    },
-    {
-      type: gl.FRAGMENT_SHADER,
-      value: `
-      precision mediump float;
-      uniform vec4 uGlobalColor;
-
-      void main() {
-        gl_FragColor = uGlobalColor;
-      }
-      `
-    }
-  ];
-
-  shaderProgram = buildShaderProgram(shaderSet);
-
-  aspectRatio = glCanvas.width / glCanvas.height;
-  currentRotation = [0, 1];
-  currentScale = [1.0, aspectRatio];
-
-  vertexArray = new Float32Array([
-    -0.5,
-    0.5,
-
-    0.5,
-    0.5,
-
-    0.5,
-    -0.5,
-
-    -0.5,
-    0.5,
-    
-    0.5,
-    -0.5,
-
-    -0.5,
-    -0.5
-  ]);
-
-  vertexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
-
-  vertexNumComponents = 2;
-  vertexCount = vertexArray.length / vertexNumComponents;
-
-  currentAngle = 0.0;
-  rotationRate = 6;
-
-  animateScene();
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2');
+if (!gl) {
+  console.error('no gl context');
 }
 
-function buildShaderProgram(shaderInfo) {
-  let program = gl.createProgram();
+const vSource = `#version 300 es
 
-  shaderInfo.forEach(({ value, type }) => {
-    let shader = compileShader(value, type);
-    if (shader) {
-      gl.attachShader(program, shader);
-    }
-  });
+// an attribute is an input (in) to a vertex shader.
+// It will receive data from a buffer
+in vec4 a_position;
 
-  gl.linkProgram(program);
+// all shaders have a main function
+void main() {
 
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.log('Error linking shader program:');
-    console.log(gl.getProgramInfoLog(program));
-  }
-
-  return program;
+ // gl_Position is a special variable a vertex shader
+ // is responsible for setting
+ gl_Position = a_position;
 }
+`;
 
-function compileShader(code, type) {
-  let shader = gl.createShader(type);
-  gl.shaderSource(shader, code);
-  gl.compileShader(shader);
+const fSource = `#version 300 es
 
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.log(
-      `Error compiling ${
-        type === gl.VERTEX_SHADER ? 'vertex' : 'fragment'
-      } shader:`
-    );
-    console.log(gl.getShaderInfoLog(shader));
-  }
-  return shader;
+// fragment shaders don't have a default precision so we need
+// to pick one. mediump is a good default. It means "medium precision"
+precision mediump float;
+
+// we need to declare an output for the fragment shader
+out vec4 outColor;
+
+void main() {
+ // Just set the output to a constant redish-purple
+ outColor = vec4(1, 0, 0.5, 1);
 }
+`;
 
-function animateScene() {
-  gl.viewport(0, 0, glCanvas.width, glCanvas.height);
-  gl.clearColor(0.8, 0.9, 1.0, 1.0);
+const vertexShader = createShader(gl, gl.VERTEX_SHADER, vSource);
+const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fSource);
+const program = createProgram(gl, vertexShader, fragmentShader);
+
+// MAIN
+
+const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+const positionBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+
+const colorLocation = gl.getUniformLocation(program, "u_color");
+
+// three 2d points
+const positions = [
+  // one
+  0,
+  0,
+  1,
+
+  //two
+  0,
+  0.5,
+  1,
+
+  // three
+  0.7,
+  0,
+  1,
+
+  // second item
+  // one
+  -0.9,
+  -0.9,
+  0,
+
+  //two
+  -0.7,
+  -0.1,
+  0,
+
+  // three
+  -0.2,
+  -0.8,
+  0
+];
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+const vao = gl.createVertexArray();
+gl.bindVertexArray(vao);
+gl.enableVertexAttribArray(positionAttributeLocation);
+
+const size = 3; // 3 components per iteration
+const type = gl.FLOAT; // the data is 32bit floats
+const normalize = false; // don't normalize the data
+const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+const offset = 0; // start at the beginning of the buffer
+gl.vertexAttribPointer(
+  positionAttributeLocation,
+  size,
+  type,
+  normalize,
+  stride,
+  offset
+);
+
+// resize(gl.canvas);
+// gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+// // Clear the canvas
+// gl.clearColor(0, 0, 0, 1);
+// gl.clear(gl.COLOR_BUFFER_BIT);
+
+// Tell it to use our program (pair of shaders)
+gl.useProgram(program);
+
+// Bind the attribute/buffer set we want.
+gl.bindVertexArray(vao);
+
+let lastRender = 0;
+let now;
+let delta;
+render();
+
+function render(timestamp = 0) {
+  now = Date.now();
+  delta = timestamp - lastRender;
+  
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+  // Clear the canvas
+  gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  let radians = (currentAngle * Math.PI) / 180.0;
-  currentRotation[0] = Math.sin(radians);
-  currentRotation[1] = Math.cos(radians);
+  const primitiveType = gl.TRIANGLES;
+  const offset = 0;
+  const count = 6;
+  gl.drawArrays(primitiveType, offset, count);
 
-  gl.useProgram(shaderProgram);
+  lastRender = now;
+  return requestAnimationFrame(render);
+}
 
-  uScalingFactor = gl.getUniformLocation(shaderProgram, 'uScalingFactor');
-  uGlobalColor = gl.getUniformLocation(shaderProgram, 'uGlobalColor');
-  uRotationVector = gl.getUniformLocation(shaderProgram, 'uRotationVector');
-  aVertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
+function createShader(gl, type, source) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+  if (success) {
+    return shader;
+  }
 
-  gl.uniform2fv(uScalingFactor, currentScale);
-  gl.uniform2fv(uRotationVector, currentRotation);
-  gl.uniform4fv(uGlobalColor, [0.1, 0.7, 0.2, 1.0]);
+  console.log(gl.getShaderInfoLog(shader));
+  gl.deleteShader(shader);
+}
 
-  gl.enableVertexAttribArray(aVertexPosition);
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.vertexAttribPointer(
-    aVertexPosition,
-    vertexNumComponents,
-    gl.FLOAT,
-    false,
-    0,
-    0
-  );
+function createProgram(gl, vertexShader, fragmentShader) {
+  const program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  const success = gl.getProgramParameter(program, gl.LINK_STATUS);
+  if (success) {
+    return program;
+  }
 
-  gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
-
-  window.requestAnimationFrame(currentTime => {
-    let deltaAngle = ((currentTime - previousTime) / 1000.0) * degreesPerSecond;
-
-    currentAngle = (currentAngle + deltaAngle) % 360;
-    previousTime = currentTime;
-    animateScene();
-  });
+  console.log(gl.getProgramInfoLog(program));
+  gl.deleteProgram(program);
 }
