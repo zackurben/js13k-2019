@@ -25,12 +25,15 @@ const vSource = `#version 300 es
 // It will receive data from a buffer
 in vec4 a_position;
 
+// translation to add to position
+uniform vec4 u_translation;
+
 // all shaders have a main function
 void main() {
 
- // gl_Position is a special variable a vertex shader
- // is responsible for setting
- gl_Position = a_position;
+  // gl_Position is a special variable a vertex shader
+  // is responsible for setting
+  gl_Position = a_position + u_translation;
 }
 `;
 
@@ -46,8 +49,8 @@ uniform vec4 u_color;
 out vec4 outColor;
 
 void main() {
- // Just set the output to a constant redish-purple
- outColor = u_color;
+  // Just set the output to a constant redish-purple
+  outColor = u_color;
 }
 `;
 
@@ -63,41 +66,44 @@ const program = createProgram(gl, vertexShader, fragmentShader);
 const objs = [
   {
     data: [
-    // one
-    0,
-    0,
+      // one
+      0,
+      0,
 
-    //two
-    0,
-    0.5,
+      //two
+      0,
+      0.5,
 
-    // three
-    0.7,
-    0
-  ],
-    color: [Math.random(), Math.random(), Math.random(), 1]
+      // three
+      0.7,
+      0
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0, 0]
   },
   {
     data: [
-    // one
-    -0.9,
-    -0.9,
+      // one
+      -0.9,
+      -0.9,
 
-    //two
-    -0.7,
-    -0.1,
+      //two
+      -0.7,
+      -0.1,
 
-    // three
-    -0.2,
-    -0.8
+      // three
+      -0.2,
+      -0.8
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1]
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0, 0]
   }
 ];
 
 // Get all our shader attributes
 const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 const colorLocation = gl.getUniformLocation(program, 'u_color');
+const translationLocation = gl.getUniformLocation(program, 'u_translation');
 
 // Create our buffer
 const positionBuffer = gl.createBuffer();
@@ -147,9 +153,10 @@ let delta;
   gl.bindVertexArray(vao);
 
   // Render each of our objects
-  objs.forEach(({data, color}) => {
+  objs.forEach(({ data, color, translation }) => {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
     gl.uniform4f(colorLocation, ...color);
+    gl.uniform4f(translationLocation, ...translation);
 
     const primitiveType = gl.TRIANGLES;
     const offset = 0;
