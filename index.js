@@ -40,12 +40,14 @@ const fSource = `#version 300 es
 // to pick one. mediump is a good default. It means "medium precision"
 precision mediump float;
 
+uniform vec4 u_color;
+
 // we need to declare an output for the fragment shader
 out vec4 outColor;
 
 void main() {
  // Just set the output to a constant redish-purple
- outColor = vec4(1, 0, 0.5, 1);
+ outColor = u_color;
 }
 `;
 
@@ -59,7 +61,8 @@ const program = createProgram(gl, vertexShader, fragmentShader);
 
 // Our list of items to render
 const objs = [
-  [
+  {
+    data: [
     // one
     0,
     0,
@@ -72,7 +75,10 @@ const objs = [
     0.7,
     0
   ],
-  [
+    color: [Math.random(), Math.random(), Math.random(), 1]
+  },
+  {
+    data: [
     // one
     -0.9,
     -0.9,
@@ -84,12 +90,14 @@ const objs = [
     // three
     -0.2,
     -0.8
-  ]
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1]
+  }
 ];
 
 // Get all our shader attributes
 const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-// const colorLocation = gl.getUniformLocation(program, 'u_color');
+const colorLocation = gl.getUniformLocation(program, 'u_color');
 
 // Create our buffer
 const positionBuffer = gl.createBuffer();
@@ -139,13 +147,14 @@ let delta;
   gl.bindVertexArray(vao);
 
   // Render each of our objects
-  objs.forEach(obj => {
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(obj), gl.STATIC_DRAW);
+  objs.forEach(({data, color}) => {
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+    gl.uniform4f(colorLocation, ...color);
 
     const primitiveType = gl.TRIANGLES;
     const offset = 0;
     const count = 3;
-    gl.drawArrays(primitiveType, offset, obj.length / size);
+    gl.drawArrays(primitiveType, offset, data.length / size);
   });
 
   if (fps) {
