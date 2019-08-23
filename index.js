@@ -185,6 +185,187 @@ const program = createProgram(gl, vertexShader, fragmentShader);
 
 // Our list of items to render
 const objs = [
+  // front
+  {
+    data: [
+      // one
+      0.5,
+      0.5,
+      0,
+
+      //two
+      -0.5,
+      0.5,
+      0,
+
+      // three
+      -0.5,
+      -0.5,
+      0
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1]
+  },
+  {
+    data: [
+      // one
+      0.5,
+      -0.5,
+      0,
+
+      //two
+      0.5,
+      0.5,
+      0,
+
+      // three
+      -0.5,
+      -0.5,
+      0
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1]
+  },
+  // back
+  {
+    data: [
+      // one
+      -0.5,
+      -0.5,
+      -1,
+
+      //two
+      -0.5,
+      0.5,
+      -1,
+
+      // three
+      0.5,
+      0.5,
+      -1
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1]
+  },
+  {
+    data: [
+      // one
+      -0.5,
+      -0.5,
+      -1,
+
+      //two
+      0.5,
+      0.5,
+      -1,
+
+      // three
+      0.5,
+      -0.5,
+      -1
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1]
+  },
+  // top
+  {
+    data: [
+      // one
+      0.5,
+      0.5,
+      -1,
+
+      //two
+      -0.5,
+      0.5,
+      -1,
+
+      // three
+      -0.5,
+      0.5,
+      0
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1]
+  },
+  {
+    data: [
+      // one
+      0.5,
+      0.5,
+      0, 
+
+      //two
+      0.5,
+      0.5,
+      -1,
+
+      // three
+      -0.5,
+      0.5,
+      0
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1]
+  },
+  // bottom
+  {
+    data: [
+      // one
+      -0.5,
+      -0.5,
+      0,
+
+      //two
+      -0.5,
+      -0.5,
+      -1,
+
+      // three
+      0.5,
+      -0.5,
+      -1
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1]
+  },
+  {
+    data: [
+      // one
+      -0.5,
+      -0.5,
+      0, 
+
+      //two
+      0.5,
+      -0.5,
+      -1,
+
+      // three
+      0.5,
+      -0.5,
+      0
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1]
+  },
+  // left
   {
     data: [
       // one
@@ -198,9 +379,9 @@ const objs = [
       0,
 
       // three
+      -0.5,
       0.5,
-      0.5,
-      0
+      -1
     ],
     color: [Math.random(), Math.random(), Math.random(), 1],
     translation: [0, 0, 0],
@@ -215,9 +396,54 @@ const objs = [
       0,
 
       //two
+      -0.5,
+      0.5,
+      -1,
+
+      // three
+      -0.5,
+      -0.5,
+      -1
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1]
+  },
+  // right
+  {
+    data: [
+      // one
+      0.5,
+      0.5,
+      -1,
+
+      //two
       0.5,
       0.5,
       0,
+
+      // three
+      0.5,
+      -0.5,
+      0
+    ],
+    color: [Math.random(), Math.random(), Math.random(), 1],
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1]
+  },
+  {
+    data: [
+      // one
+      0.5,
+      -0.5,
+      -1,
+
+      //two
+      0.5,
+      0.5,
+      -1,
 
       // three
       0.5,
@@ -278,6 +504,8 @@ gl.vertexAttribPointer(
 
 // Define the viewport dimensions.
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+gl.enable(gl.CULL_FACE);
+gl.enable(gl.DEPTH_TEST);
 
 let lastRender = 0;
 let delta;
@@ -295,9 +523,13 @@ let delta;
   gl.bindVertexArray(vao);
 
   // Render each of our objects
-  objs.forEach(({ data, color, getMatrix }) => {
+  objs.forEach(item => {
+    const { data, color, getMatrix } = item;
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
     gl.uniform4f(colorLocation, ...color);
+
+    item.scale = [0.5, 0.5, 0.5]
+    item.rotation = [timestamp/5000, timestamp/5000, timestamp/5000]
     gl.uniformMatrix4fv(matrixLocation, false, getMatrix());
 
     const primitiveType = gl.TRIANGLES;
