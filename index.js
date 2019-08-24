@@ -19,6 +19,14 @@ if (!gl) {
   console.error('no gl context');
 }
 
+function radToDeg(r) {
+  return (r * 180) / Math.PI;
+}
+
+function degToRad(d) {
+  return (d * Math.PI) / 180;
+}
+
 var m4 = {
   identity: function() {
     return [
@@ -26,28 +34,18 @@ var m4 = {
       0, 1, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1
-    ];
+    ]
   },
 
-  projection: function(width, height, depth) {
-    // Note: This matrix flips the Y axis so 0 is at the top.
+  perspective: function(fieldOfViewInRadians, aspect, near, far) {
+    var f = 1.0 / Math.tan(fieldOfViewInRadians/2);
+    var rangeInv = 1.0 / (near - far);
+ 
     return [
-      2 / width,
-      0,
-      0,
-      0,
-      0,
-      -2 / height,
-      0,
-      0,
-      0,
-      0,
-      2 / depth,
-      0,
-      -1,
-      1,
-      0,
-      1
+      f / aspect, 0, 0, 0,
+      0, f, 0, 0,
+      0, 0, (near + far) * rangeInv, -1,
+      0, 0, near * far * rangeInv * 2, 0
     ];
   },
 
@@ -187,6 +185,14 @@ const program = createProgram(gl, vertexShader, fragmentShader);
 //
 // MAIN
 //
+
+const fieldOfViewRadians = degToRad(60);
+const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+const zNear = 1;
+const zFar = 2000;
+let gTranslate = [0, 0, -5];
+let gRotate = [0, 0, 0];
+let gScale = [1, 1, 1];
 
 // Our list of items to render
 const objs = [
@@ -462,11 +468,14 @@ const objs = [
   }
 ].map(item => {
   item.getMatrix = () => {
-    let matrix = m4.translate(m4.identity(), ...item.translation);
-    matrix = m4.scale(matrix, ...item.scale);
+    
+    let matrix = m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
+    matrix = m4.translate(matrix, ...item.translation);
+    matrix = m4.translate(matrix, ...gTranslate);
     matrix = m4.xRotate(matrix, item.rotation[0]);
     matrix = m4.yRotate(matrix, item.rotation[1]);
     matrix = m4.zRotate(matrix, item.rotation[2]);
+    matrix = m4.scale(matrix, ...item.scale);
     return matrix;
   };
 
@@ -533,9 +542,9 @@ let delta;
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
     gl.uniform4f(colorLocation, ...color);
 
-    item.scale = [0.5, 0.5, 0.5]
-    // item.rotation = [timestamp/5000, timestamp/5000, timestamp/5000]
-    item.rotation = [timestamp/1000, 0, 0]
+    item.scale = [0.5, 0.5, 0.5];
+    // item.rotation = [timestamp/1000, timestamp/1000, 0]
+    // item.rotation = [1, 1, 1];
     gl.uniformMatrix4fv(matrixLocation, false, getMatrix());
 
     const offset = 0;
