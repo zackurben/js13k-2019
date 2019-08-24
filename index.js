@@ -21,7 +21,12 @@ if (!gl) {
 
 var m4 = {
   identity: function() {
-    return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+    return [
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ];
   },
 
   projection: function(width, height, depth) {
@@ -189,21 +194,21 @@ const objs = [
   {
     data: [
       // one
-      0.5,
-      0.5,
+      -0.5,
+      -0.5,
       0,
 
-      //two
-      -0.5,
+      // two
+      0.5,
       0.5,
       0,
 
       // three
       -0.5,
-      -0.5,
+      0.5,
       0
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [255, 0, 0, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -211,21 +216,21 @@ const objs = [
   {
     data: [
       // one
-      0.5,
+      -0.5,
       -0.5,
       0,
 
-      //two
+      // two
       0.5,
-      0.5,
+      -0.5,
       0,
 
       // three
-      -0.5,
-      -0.5,
+      0.5,
+      0.5,
       0
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [0, 255, 0, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -234,21 +239,21 @@ const objs = [
   {
     data: [
       // one
+      0.5,
       -0.5,
-      -0.5,
-      -1,
+      1,
 
-      //two
+      // two
       -0.5,
       0.5,
-      -1,
+      1,
 
       // three
       0.5,
       0.5,
-      -1
+      1
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [0, 255, 0, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -256,21 +261,21 @@ const objs = [
   {
     data: [
       // one
+      0.5,
       -0.5,
-      -0.5,
-      -1,
+      1,
 
-      //two
-      0.5,
-      0.5,
-      -1,
+      // two
+      -0.5,
+      -0.5,
+      1,
 
       // three
-      0.5,
       -0.5,
-      -1
+      0.5,
+      1
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [255, 0, 0, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -279,21 +284,21 @@ const objs = [
   {
     data: [
       // one
-      0.5,
-      0.5,
-      -1,
-
-      //two
       -0.5,
       0.5,
-      -1,
+      0,
+
+      //two
+      0.5,
+      0.5,
+      1,
 
       // three
       -0.5,
       0.5,
-      0
+      1
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [255, 0, 255, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -301,21 +306,21 @@ const objs = [
   {
     data: [
       // one
+      -0.5,
       0.5,
-      0.5,
-      0, 
+      0,
 
       //two
       0.5,
       0.5,
-      -1,
+      0,
 
       // three
-      -0.5,
       0.5,
-      0
+      0.5,
+      1
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [255, 255, 255, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -326,19 +331,19 @@ const objs = [
       // one
       -0.5,
       -0.5,
-      0,
+      1,
 
       //two
-      -0.5,
-      -0.5,
-      -1,
-
-      // three
       0.5,
       -0.5,
-      -1
+      0,
+
+      // three
+      -0.5,
+      -0.5,
+      0
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [255, 255, 255, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -348,19 +353,19 @@ const objs = [
       // one
       -0.5,
       -0.5,
-      0, 
+      1,
 
       //two
       0.5,
       -0.5,
-      -1,
+      1,
 
       // three
       0.5,
       -0.5,
       0
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [255, 0, 255, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -371,7 +376,7 @@ const objs = [
       // one
       -0.5,
       -0.5,
-      0,
+      1,
 
       //two
       -0.5,
@@ -381,9 +386,9 @@ const objs = [
       // three
       -0.5,
       0.5,
-      -1
+      1
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [255, 255, 0, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -393,19 +398,19 @@ const objs = [
       // one
       -0.5,
       -0.5,
-      0,
+      1,
 
       //two
       -0.5,
-      0.5,
-      -1,
+      -0.5,
+      0,
 
       // three
       -0.5,
-      -0.5,
-      -1
+      0.5,
+      0
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [0, 0, 255, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -415,20 +420,20 @@ const objs = [
     data: [
       // one
       0.5,
-      0.5,
-      -1,
+      -0.5,
+      0,
 
       //two
       0.5,
       0.5,
-      0,
+      1,
 
       // three
       0.5,
-      -0.5,
+      0.5,
       0
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [0, 0, 255, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -438,19 +443,19 @@ const objs = [
       // one
       0.5,
       -0.5,
-      -1,
+      0,
 
       //two
       0.5,
-      0.5,
-      -1,
+      -0.5,
+      1,
 
       // three
       0.5,
-      -0.5,
-      0
+      0.5,
+      1
     ],
-    color: [Math.random(), Math.random(), Math.random(), 1],
+    color: [255, 255, 0, 1],
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
@@ -458,10 +463,10 @@ const objs = [
 ].map(item => {
   item.getMatrix = () => {
     let matrix = m4.translate(m4.identity(), ...item.translation);
+    matrix = m4.scale(matrix, ...item.scale);
     matrix = m4.xRotate(matrix, item.rotation[0]);
     matrix = m4.yRotate(matrix, item.rotation[1]);
     matrix = m4.zRotate(matrix, item.rotation[2]);
-    matrix = m4.scale(matrix, ...item.scale);
     return matrix;
   };
 
@@ -529,13 +534,12 @@ let delta;
     gl.uniform4f(colorLocation, ...color);
 
     item.scale = [0.5, 0.5, 0.5]
-    item.rotation = [timestamp/5000, timestamp/5000, timestamp/5000]
+    // item.rotation = [timestamp/5000, timestamp/5000, timestamp/5000]
+    item.rotation = [timestamp/1000, 0, 0]
     gl.uniformMatrix4fv(matrixLocation, false, getMatrix());
 
-    const primitiveType = gl.TRIANGLES;
     const offset = 0;
-    const count = 3;
-    gl.drawArrays(primitiveType, offset, data.length / size);
+    gl.drawArrays(gl.TRIANGLES, offset, data.length / size);
   });
 
   if (fps) {
