@@ -29,23 +29,30 @@ function degToRad(d) {
 
 var m4 = {
   identity: function() {
-    return [
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1
-    ]
+    return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
   },
 
   perspective: function(fieldOfViewInRadians, aspect, near, far) {
     var f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfViewInRadians);
     var rangeInv = 1.0 / (near - far);
- 
+
     return [
-      f / aspect, 0, 0, 0,
-      0, f, 0, 0,
-      0, 0, (near + far) * rangeInv, -1,
-      0, 0, near * far * rangeInv * 2, 0
+      f / aspect,
+      0,
+      0,
+      0,
+      0,
+      f,
+      0,
+      0,
+      0,
+      0,
+      (near + far) * rangeInv,
+      -1,
+      0,
+      0,
+      near * far * rangeInv * 2,
+      0
     ];
   },
 
@@ -465,8 +472,17 @@ const objs = [
     translation: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1]
-  }
+  },
+
+  generateCube({color: [30/255, 40/255, 40/255, 1], translation: [-6, 0, -10], rotation: [0, 0, 0], animate: (data, timestamp) => {
+    data.rotation = [0, timestamp/1000, 0];
+  }})
 ].map(item => {
+  item.color = item.color || [Math.random(), Math.random(), Math.random(), 1];
+  item.translation = item.translation || [0, 0, 0];
+  item.rotation = item.rotation || [0, 0, 0];
+  item.scale = item.scale || [1, 1, 1];
+
   item.getMatrix = () => {
     let matrix = m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
     matrix = m4.translate(matrix, ...item.translation);
@@ -541,10 +557,14 @@ let delta;
 
   // Render each of our objects
   objs.forEach(item => {
-    const { data, color, getMatrix } = item;
+    if (item.animate) {
+      item.animate(item, timestamp);
+    }
+    const { data, color, getMatrix, animation} = item;
+    
+
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
     gl.uniform4f(colorLocation, ...color);
-
     // gScale = [0.5, 0.5, 0.5];
     // gRotate = [timestamp/500, timestamp/500, 0]
     gl.uniformMatrix4fv(matrixLocation, false, getMatrix());
@@ -588,4 +608,135 @@ function createProgram(gl, vertexShader, fragmentShader) {
 
   console.log(gl.getProgramInfoLog(program));
   gl.deleteProgram(program);
+}
+
+function generateCube({color, translation, rotation, scale, animate}) {
+  return {
+    data: [
+      // front
+      -0.5,
+      -0.5,
+      0,
+      0.5,
+      0.5,
+      0,
+      -0.5,
+      0.5,
+      0,
+      -0.5,
+      -0.5,
+      0,
+      0.5,
+      -0.5,
+      0,
+      0.5,
+      0.5,
+      0,
+
+      // back
+      0.5,
+      -0.5,
+      -1,
+      -0.5,
+      0.5,
+      -1,
+      0.5,
+      0.5,
+      -1,
+      0.5,
+      -0.5,
+      -1,
+      -0.5,
+      -0.5,
+      -1,
+      -0.5,
+      0.5,
+      -1,
+
+      // top
+      -0.5,
+      0.5,
+      0,
+      0.5,
+      0.5,
+      -1,
+      -0.5,
+      0.5,
+      -1,
+      -0.5,
+      0.5,
+      0,
+      0.5,
+      0.5,
+      0,
+      0.5,
+      0.5,
+      -1,
+
+      // bottom
+      -0.5,
+      -0.5,
+      -1,
+      0.5,
+      -0.5,
+      0,
+      -0.5,
+      -0.5,
+      0,
+      -0.5,
+      -0.5,
+      -1,
+      0.5,
+      -0.5,
+      -1,
+      0.5,
+      -0.5,
+      0,
+
+      // left
+      -0.5,
+      -0.5,
+      -1,
+      -0.5,
+      0.5,
+      0,
+      -0.5,
+      0.5,
+      -1,
+      -0.5,
+      -0.5,
+      -1,
+      -0.5,
+      -0.5,
+      0,
+      -0.5,
+      0.5,
+      0,
+
+      // right
+      0.5,
+      -0.5,
+      0,
+      0.5,
+      0.5,
+      -1,
+      0.5,
+      0.5,
+      0,
+      0.5,
+      -0.5,
+      0,
+      0.5,
+      -0.5,
+      -1,
+      0.5,
+      0.5,
+      -1
+    ],
+    color,
+    translation,
+    rotation,
+    scale,
+    animate
+  };
 }
