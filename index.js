@@ -38,7 +38,7 @@ var m4 = {
   },
 
   perspective: function(fieldOfViewInRadians, aspect, near, far) {
-    var f = 1.0 / Math.tan(fieldOfViewInRadians/2);
+    var f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfViewInRadians);
     var rangeInv = 1.0 / (near - far);
  
     return [
@@ -186,12 +186,12 @@ const program = createProgram(gl, vertexShader, fragmentShader);
 // MAIN
 //
 
-const fieldOfViewRadians = degToRad(60);
+let fieldOfViewRadians = degToRad(60);
 const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-const zNear = 1;
-const zFar = 2000;
+let zNear = 1;
+let zFar = 2000;
 let gTranslate = [0, 0, -5];
-let gRotate = [0, 0, 0];
+let gRotate = [1, 1, 1];
 let gScale = [1, 1, 1];
 
 // Our list of items to render
@@ -247,17 +247,17 @@ const objs = [
       // one
       0.5,
       -0.5,
-      1,
+      -1,
 
       // two
       -0.5,
       0.5,
-      1,
+      -1,
 
       // three
       0.5,
       0.5,
-      1
+      -1
     ],
     color: [0, 255, 0, 1],
     translation: [0, 0, 0],
@@ -269,17 +269,17 @@ const objs = [
       // one
       0.5,
       -0.5,
-      1,
+      -1,
 
       // two
       -0.5,
       -0.5,
-      1,
+      -1,
 
       // three
       -0.5,
       0.5,
-      1
+      -1
     ],
     color: [255, 0, 0, 1],
     translation: [0, 0, 0],
@@ -297,12 +297,12 @@ const objs = [
       //two
       0.5,
       0.5,
-      1,
+      -1,
 
       // three
       -0.5,
       0.5,
-      1
+      -1
     ],
     color: [255, 0, 255, 1],
     translation: [0, 0, 0],
@@ -324,7 +324,7 @@ const objs = [
       // three
       0.5,
       0.5,
-      1
+      -1
     ],
     color: [255, 255, 255, 1],
     translation: [0, 0, 0],
@@ -337,7 +337,7 @@ const objs = [
       // one
       -0.5,
       -0.5,
-      1,
+      -1,
 
       //two
       0.5,
@@ -359,12 +359,12 @@ const objs = [
       // one
       -0.5,
       -0.5,
-      1,
+      -1,
 
       //two
       0.5,
       -0.5,
-      1,
+      -1,
 
       // three
       0.5,
@@ -382,7 +382,7 @@ const objs = [
       // one
       -0.5,
       -0.5,
-      1,
+      -1,
 
       //two
       -0.5,
@@ -392,7 +392,7 @@ const objs = [
       // three
       -0.5,
       0.5,
-      1
+      -1
     ],
     color: [255, 255, 0, 1],
     translation: [0, 0, 0],
@@ -404,7 +404,7 @@ const objs = [
       // one
       -0.5,
       -0.5,
-      1,
+      -1,
 
       //two
       -0.5,
@@ -432,7 +432,7 @@ const objs = [
       //two
       0.5,
       0.5,
-      1,
+      -1,
 
       // three
       0.5,
@@ -454,12 +454,12 @@ const objs = [
       //two
       0.5,
       -0.5,
-      1,
+      -1,
 
       // three
       0.5,
       0.5,
-      1
+      -1
     ],
     color: [255, 255, 0, 1],
     translation: [0, 0, 0],
@@ -468,14 +468,17 @@ const objs = [
   }
 ].map(item => {
   item.getMatrix = () => {
-    
     let matrix = m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
     matrix = m4.translate(matrix, ...item.translation);
     matrix = m4.translate(matrix, ...gTranslate);
     matrix = m4.xRotate(matrix, item.rotation[0]);
+    matrix = m4.xRotate(matrix, gRotate[0]);
     matrix = m4.yRotate(matrix, item.rotation[1]);
+    matrix = m4.yRotate(matrix, gRotate[1]);
     matrix = m4.zRotate(matrix, item.rotation[2]);
+    matrix = m4.zRotate(matrix, gRotate[2]);
     matrix = m4.scale(matrix, ...item.scale);
+    matrix = m4.scale(matrix, ...gScale);
     return matrix;
   };
 
@@ -542,9 +545,8 @@ let delta;
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
     gl.uniform4f(colorLocation, ...color);
 
-    item.scale = [0.5, 0.5, 0.5];
-    // item.rotation = [timestamp/1000, timestamp/1000, 0]
-    // item.rotation = [1, 1, 1];
+    // gScale = [0.5, 0.5, 0.5];
+    // gRotate = [timestamp/500, timestamp/500, 0]
     gl.uniformMatrix4fv(matrixLocation, false, getMatrix());
 
     const offset = 0;
