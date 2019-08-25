@@ -27,28 +27,6 @@ function degToRad(d) {
   return (d * Math.PI) / 180;
 }
 
-function cross(a, b) {
-  return [a[1] * b[2] - a[2] * b[1],
-          a[2] * b[0] - a[0] * b[2],
-          a[0] * b[1] - a[1] * b[0]];
-}
-
-function cross(a, b) {
-  return [a[1] * b[2] - a[2] * b[1],
-          a[2] * b[0] - a[0] * b[2],
-          a[0] * b[1] - a[1] * b[0]];
-}
-
-function normalize(v) {
-  var length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-  // make sure we don't divide by 0.
-  if (length !== 0) {
-    return [v[0] / length, v[1] / length, v[2] / length];
-  }
-  
-  return [0, 0, 0];
-}
-
 var m4 = {
   inverse: function(m) {
     var m00 = m[0 * 4 + 0];
@@ -270,10 +248,12 @@ const vSource = `#version 300 es
 
 in vec4 a_position;
 
-uniform mat4 u_matrix;
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_projection;
 
 void main() {
-  gl_Position = u_matrix * a_position;
+  gl_Position = u_projection * u_view * u_model * a_position;
 }
 `;
 
@@ -591,7 +571,7 @@ const objs = [
   item.scale = item.scale || [1, 1, 1];
 
   item.getMatrix = () => {
-    let matrix = m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
+    let matrix = m4.identity();
     matrix = m4.translate(matrix, ...item.translation);
     matrix = m4.translate(matrix, ...gTranslate);
     matrix = m4.xRotate(matrix, item.rotation[0]);
@@ -608,10 +588,18 @@ const objs = [
   return item;
 });
 
+let camera;
+const getCamera = () => {
+  camera = camera || m4.identity();
+  return camera;
+}
+
 // Get all our shader attributes
 const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 const colorLocation = gl.getUniformLocation(program, 'u_color');
-const matrixLocation = gl.getUniformLocation(program, 'u_matrix');
+const modelLocation = gl.getUniformLocation(program, 'u_model');
+const viewLocation = gl.getUniformLocation(program, 'u_view');
+const projectionLocation = gl.getUniformLocation(program, 'u_projection');
 
 // Create our buffer
 const positionBuffer = gl.createBuffer();
@@ -671,9 +659,9 @@ let delta;
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
     gl.uniform4f(colorLocation, ...color);
-    // gScale = [0.5, 0.5, 0.5];
-    // gRotate = [timestamp/500, timestamp/500, 0]
-    gl.uniformMatrix4fv(matrixLocation, false, getMatrix());
+    gl.uniformMatrix4fv(modelLocation, false, getMatrix());
+    gl.uniformMatrix4fv(viewLocation, false, getCamera());
+    gl.uniformMatrix4fv(projectionLocation, false, m4.perspective(fieldOfViewRadians, aspect, zNear, zFar));
 
     const offset = 0;
     gl.drawArrays(gl.TRIANGLES, offset, data.length / size);
