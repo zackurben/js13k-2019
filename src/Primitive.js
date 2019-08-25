@@ -1,5 +1,5 @@
 export default {
-  cube({ color, translation, rotation, scale, animate }) {
+  cube({ color, translation, rotation, scale, update }) {
     return {
       data: [
         // front
@@ -126,7 +126,7 @@ export default {
       translation,
       rotation,
       scale,
-      animate
+      update
     };
   }
 };

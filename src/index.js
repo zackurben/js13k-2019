@@ -3,6 +3,7 @@ import StatCache from './StatCache';
 import m4 from './Matrix';
 import Primitive from './Primitive';
 import Player from './Player';
+import Util from './Util';
 
 const player = new Player();
 const FPS = new StatCache();
@@ -344,8 +345,8 @@ const objs = [
     color: [30 / 255, 40 / 255, 40 / 255, 1],
     translation: [-6, 0, -10],
     rotation: [0, 0, 0],
-    animate: (data, timestamp) => {
-      data.rotation = [0, timestamp / 1000, 0];
+    update: (delta, data) => {
+      data.rotation = Util.arrayAdd(data.rotation, [0, delta / 1000, 0]);
     }
   })
 ].map(item => {
@@ -431,8 +432,8 @@ let delta;
 
   // Render each of our objects
   objs.forEach(item => {
-    if (item.animate) {
-      item.animate(item, timestamp);
+    if (item.update) {
+      item.update(delta, item);
     }
     const { data, color, getMatrix, animation } = item;
 
@@ -455,8 +456,8 @@ let delta;
     DRAW.add(delta);
 
     fps.innerText = `frame ms: ${DRAW.get()}
-fps: ${FPS.get()}
-player position: ${JSON.stringify(player.position)}`;
+    fps: ${FPS.get()}
+    player position: ${JSON.stringify(player.position)}`;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);
