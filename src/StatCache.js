@@ -10,10 +10,6 @@ export default class StatCache {
         this._last.unshift(item);
         this._last = this._last.slice(0, this._count);
       }
-    }
-  }
-
-  get() {
-    return 'foo';
+    };
   }
 }

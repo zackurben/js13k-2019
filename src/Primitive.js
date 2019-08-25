@@ -1,5 +1,5 @@
 export default {
-  cube({color, translation, rotation, scale, animate}) {
+  cube({ color, translation, rotation, scale, animate }) {
     return {
       data: [
         // front
@@ -21,7 +21,7 @@ export default {
         0.5,
         0.5,
         0,
-  
+
         // back
         0.5,
         -0.5,
@@ -41,7 +41,7 @@ export default {
         -0.5,
         0.5,
         -1,
-  
+
         // top
         -0.5,
         0.5,
@@ -61,7 +61,7 @@ export default {
         0.5,
         0.5,
         -1,
-  
+
         // bottom
         -0.5,
         -0.5,
@@ -81,7 +81,7 @@ export default {
         0.5,
         -0.5,
         0,
-  
+
         // left
         -0.5,
         -0.5,
@@ -101,7 +101,7 @@ export default {
         -0.5,
         0.5,
         0,
-  
+
         // right
         0.5,
         -0.5,

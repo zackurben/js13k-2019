@@ -2,7 +2,9 @@ import Input from './Input';
 import StatCache from './StatCache';
 import m4 from './Matrix';
 import Primitive from './Primitive';
+import Player from './Player';
 
+const player = new Player();
 const FPS = new StatCache();
 const DRAW = new StatCache();
 
@@ -338,9 +340,14 @@ const objs = [
     scale: [1, 1, 1]
   },
 
-  Primitive.cube({color: [30/255, 40/255, 40/255, 1], translation: [-6, 0, -10], rotation: [0, 0, 0], animate: (data, timestamp) => {
-    data.rotation = [0, timestamp/1000, 0];
-  }})
+  Primitive.cube({
+    color: [30 / 255, 40 / 255, 40 / 255, 1],
+    translation: [-6, 0, -10],
+    rotation: [0, 0, 0],
+    animate: (data, timestamp) => {
+      data.rotation = [0, timestamp / 1000, 0];
+    }
+  })
 ].map(item => {
   item.color = item.color || [Math.random(), Math.random(), Math.random(), 1];
   item.translation = item.translation || [0, 0, 0];
@@ -364,12 +371,6 @@ const objs = [
 
   return item;
 });
-
-let camera;
-const getCamera = () => {
-  camera = camera || m4.identity();
-  return camera;
-}
 
 // Get all our shader attributes
 const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
@@ -416,6 +417,7 @@ let lastRender = 0;
 let delta;
 (function render(timestamp = 0) {
   delta = timestamp - lastRender;
+  player.update(delta);
 
   // Clear the canvas
   gl.clearColor(0, 0, 0, 1);
@@ -432,13 +434,17 @@ let delta;
     if (item.animate) {
       item.animate(item, timestamp);
     }
-    const { data, color, getMatrix, animation} = item;
+    const { data, color, getMatrix, animation } = item;
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
     gl.uniform4f(colorLocation, ...color);
     gl.uniformMatrix4fv(modelLocation, false, getMatrix());
-    gl.uniformMatrix4fv(viewLocation, false, getCamera());
-    gl.uniformMatrix4fv(projectionLocation, false, m4.perspective(fieldOfViewRadians, aspect, zNear, zFar));
+    gl.uniformMatrix4fv(viewLocation, false, player.getCamera());
+    gl.uniformMatrix4fv(
+      projectionLocation,
+      false,
+      m4.perspective(fieldOfViewRadians, aspect, zNear, zFar)
+    );
 
     const offset = 0;
     gl.drawArrays(gl.TRIANGLES, offset, data.length / size);
@@ -448,7 +454,9 @@ let delta;
     FPS.add(1000 / delta);
     DRAW.add(delta);
 
-    fps.innerText = `frame ms: ${DRAW.get()}\nfps: ${FPS.get()}`;
+    fps.innerText = `frame ms: ${DRAW.get()}
+fps: ${FPS.get()}
+player position: ${JSON.stringify(player.position)}`;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);
