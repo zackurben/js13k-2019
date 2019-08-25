@@ -5,13 +5,35 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "serve",
-    "prettier": "prettier --single-quote --write \"*.{js,html}\""
+    "start": "webpack-dev-server --open --config webpack.dev.js",
+    "prettier": "prettier --single-quote --write \"*.{js,html}\"",
+    "prettier-build": "prettier --single-quote --write \"dist/*.{js,html}\"",
+    "build": "webpack --config webpack.prod.js",
+    "build:test": "serve dist/",
+    "watch": "webpack --progress --watch --config webpack.dev.js"
   },
   "author": "Zack Urben <zackurben@gmail.com>",
   "license": "MIT",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-transform-runtime": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/runtime": "^7.5.5",
+    "babel-loader": "^8.0.6",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.0.4",
+    "css-loader": "^3.2.0",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.8.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
     "prettier": "^1.18.2",
-    "serve": "^11.1.0"
+    "serve": "^11.1.0",
+    "style-loader": "^1.0.0",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.7",
+    "webpack-dev-server": "^3.8.0",
+    "webpack-merge": "^4.2.1"
   }
 }
