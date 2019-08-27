@@ -128,5 +128,41 @@ export default {
       scale,
       update
     };
+  },
+
+  plane({ color, translation, rotation, scale, update }) {
+    return {
+      data: [
+        // top
+        -0.5,
+        0,
+        0,
+
+        0.5,
+        0,
+        -1,
+
+        -0.5,
+        0,
+        -1,
+
+        -0.5,
+        0,
+        0,
+
+        0.5,
+        0,
+        0,
+
+        0.5,
+        0,
+        -1,
+      ],
+      color,
+      translation,
+      rotation,
+      scale,
+      update
+    };
   }
 };

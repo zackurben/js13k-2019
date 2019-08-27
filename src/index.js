@@ -65,7 +65,7 @@ const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 let zNear = 1;
 let zFar = 2000;
 let gTranslate = [0, 0, -5];
-let gRotate = [1, 1, 1];
+let gRotate = [0, 0, 0];
 let gScale = [1, 1, 1];
 
 // Our list of items to render
@@ -348,6 +348,13 @@ const objs = [
     update: (delta, data) => {
       data.rotation = Util.arrayAdd(data.rotation, [0, delta / 1000, 0]);
     }
+  }),
+
+  Primitive.plane({
+    color: [90/255, 30/255, 45/255, 1],
+    translation: [0, -3, 0],
+    scale: [10, 10, 10],
+    rotation: [0, 0, 0]
   })
 ].map(item => {
   item.color = item.color || [Math.random(), Math.random(), Math.random(), 1];
