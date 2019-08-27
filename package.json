@@ -14,6 +14,10 @@
   },
   "author": "Zack Urben <zackurben@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/zackurben/js13k-2019.git"
+  },
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.5.5",

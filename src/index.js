@@ -4,10 +4,7 @@ import m4 from './Matrix';
 import Primitive from './Primitive';
 import Player from './Player';
 import Util from './Util';
-
-const player = new Player();
-const FPS = new StatCache();
-const DRAW = new StatCache();
+import Shaders from './shaders';
 
 const canvas = document.querySelector('canvas');
 const fps = document.querySelector('div');
@@ -15,6 +12,11 @@ const gl = canvas.getContext('webgl2');
 if (!gl) {
   console.error('no gl context');
 }
+
+const player = new Player();
+const FPS = new StatCache();
+const DRAW = new StatCache();
+const { basic } = Shaders(gl);
 
 function radToDeg(r) {
   return (r * 180) / Math.PI;
@@ -24,37 +26,7 @@ function degToRad(d) {
   return (d * Math.PI) / 180;
 }
 
-const vSource = `#version 300 es
-
-in vec4 a_position;
-
-uniform mat4 u_model;
-uniform mat4 u_view;
-uniform mat4 u_projection;
-
-void main() {
-  gl_Position = u_projection * u_view * u_model * a_position;
-}
-`;
-
-const fSource = `#version 300 es
-
-// fragment shaders don't have a default precision so we need
-// to pick one. mediump is a good default. It means "medium precision"
-precision mediump float;
-
-uniform vec4 u_color;
-
-out vec4 outColor;
-
-void main() {
-  outColor = u_color;
-}
-`;
-
-const vertexShader = createShader(gl, gl.VERTEX_SHADER, vSource);
-const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fSource);
-const program = createProgram(gl, vertexShader, fragmentShader);
+const program = basic;
 
 //
 // MAIN
@@ -351,7 +323,7 @@ const objs = [
   }),
 
   Primitive.plane({
-    color: [90/255, 30/255, 45/255, 1],
+    color: [90 / 255, 30 / 255, 45 / 255, 1],
     translation: [0, -3, 0],
     scale: [10, 10, 10],
     rotation: [0, 0, 0]
@@ -469,30 +441,3 @@ let delta;
   lastRender = timestamp;
   return requestAnimationFrame(render);
 })();
-
-function createShader(gl, type, source) {
-  const shader = gl.createShader(type);
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-  if (success) {
-    return shader;
-  }
-
-  console.log(gl.getShaderInfoLog(shader));
-  gl.deleteShader(shader);
-}
-
-function createProgram(gl, vertexShader, fragmentShader) {
-  const program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-  const success = gl.getProgramParameter(program, gl.LINK_STATUS);
-  if (success) {
-    return program;
-  }
-
-  console.log(gl.getProgramInfoLog(program));
-  gl.deleteProgram(program);
-}
