@@ -1,6 +1,6 @@
 import m4 from './Matrix';
 import Input from './Input';
-import Util from './Util';
+import { arrayAdd } from './Util';
 
 export default class Player {
   constructor(position = [0, 0, 0]) {
@@ -22,7 +22,7 @@ export default class Player {
   updatePosition(delta) {
     const _speed = this.speed * (delta / 1000);
     const movement = this.input.getMovement().map(i => i * _speed);
-    this.position = Util.arrayAdd(this.position, movement);
+    this.position = arrayAdd(this.position, movement);
   }
 
   updateCamera(delta) {

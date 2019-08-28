@@ -3,8 +3,9 @@ import StatCache from './StatCache';
 import m4 from './Matrix';
 import Primitive from './Primitive';
 import Player from './Player';
-import Util from './Util';
 import Shaders from './shaders';
+import Camera from './Camera';
+import { radToDeg, degToRad, arrayAdd } from './Util';
 
 const canvas = document.querySelector('canvas');
 const fps = document.querySelector('div');
@@ -13,27 +14,14 @@ if (!gl) {
   console.error('no gl context');
 }
 
+const { basic } = Shaders(gl);
+const { Cube, Plane } = Primitive({ gl, basic });
+const camera = new Camera();
 const player = new Player();
 const FPS = new StatCache();
 const DRAW = new StatCache();
-const { basic } = Shaders(gl);
 
-function radToDeg(r) {
-  return (r * 180) / Math.PI;
-}
-
-function degToRad(d) {
-  return (d * Math.PI) / 180;
-}
-
-//
-// MAIN
-//
-
-let fieldOfViewRadians = degToRad(60);
-const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-let zNear = 1;
-let zFar = 2000;
+// Global modifiers
 let gTranslate = [0, 0, -5];
 let gRotate = [0, 0, 0];
 let gScale = [1, 1, 1];
@@ -311,67 +299,34 @@ const objs = [
     scale: [1, 1, 1]
   },
 
-  Primitive.cube({
+  new Cube({
     color: [30 / 255, 40 / 255, 40 / 255, 1],
     translation: [-6, 0, -10],
     rotation: [0, 0, 0],
     update: (delta, data) => {
-      data.rotation = Util.arrayAdd(data.rotation, [0, delta / 1000, 0]);
+      data.rotation = arrayAdd(data.rotation, [0, delta / 1000, 0]);
     }
   }),
 
-  Primitive.plane({
+  new Plane({
     color: [90 / 255, 30 / 255, 45 / 255, 1],
     translation: [0, -3, 0],
     scale: [10, 10, 10],
     rotation: [0, 0, 0]
   })
-].map(item => {
-  item.color = item.color || [Math.random(), Math.random(), Math.random(), 1];
-  item.translation = item.translation || [0, 0, 0];
-  item.rotation = item.rotation || [0, 0, 0];
-  item.scale = item.scale || [1, 1, 1];
+];
 
-  item.getMatrix = () => {
-    let matrix = m4.identity();
-    matrix = m4.translate(matrix, ...item.translation);
-    matrix = m4.translate(matrix, ...gTranslate);
-    matrix = m4.xRotate(matrix, item.rotation[0]);
-    matrix = m4.xRotate(matrix, gRotate[0]);
-    matrix = m4.yRotate(matrix, item.rotation[1]);
-    matrix = m4.yRotate(matrix, gRotate[1]);
-    matrix = m4.zRotate(matrix, item.rotation[2]);
-    matrix = m4.zRotate(matrix, gRotate[2]);
-    matrix = m4.scale(matrix, ...item.scale);
-    matrix = m4.scale(matrix, ...gScale);
-    return matrix;
-  };
-
-  return item;
-});
-
-// Create our buffer
-const positionBuffer = gl.createBuffer();
-
-// Create our VAO for our new buffer
+// Create our primary buffer and VAO
+const buffer = gl.createBuffer();
 const vao = gl.createVertexArray();
 
 // Bind our VAO
 gl.bindVertexArray(vao);
 
-// Enable our shader attribute
-gl.enableVertexAttribArray(basic.attributes.a_position);
-
 // Bind our rendering buffer to the current ARRAY_BUFFER
-gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
-const size = 3; // 3 components per iteration
-const type = gl.FLOAT; // the data is 32bit floats
-const normalize = false; // don't normalize the data
-const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-const offset = 0; // start at the beginning of the buffer
-gl.vertexAttribPointer(basic.attributes.a_position, size, type, normalize, stride, offset);
-
+// RENDER
 // Define the viewport dimensions.
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 gl.enable(gl.CULL_FACE);
@@ -395,23 +350,9 @@ let delta;
 
   // Render each of our objects
   objs.forEach(item => {
-    if (item.update) {
-      item.update(delta, item);
-    }
-    const { data, color, getMatrix, animation } = item;
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-    gl.uniform4f(basic.attributes.u_color, ...color);
-    gl.uniformMatrix4fv(basic.attributes.u_model, false, getMatrix());
-    gl.uniformMatrix4fv(basic.attributes.u_view, false, player.getCamera());
-    gl.uniformMatrix4fv(
-      basic.attributes.u_projection,
-      false,
-      m4.perspective(fieldOfViewRadians, aspect, zNear, zFar)
-    );
-
-    const offset = 0;
-    gl.drawArrays(gl.TRIANGLES, offset, data.length / size);
+    if (item.update) item.update(delta, item);
+    if (item.render)
+      item.render({ gTranslate, gRotate, gScale, camera, player });
   });
 
   if (fps) {

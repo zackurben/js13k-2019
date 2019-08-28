@@ -1,7 +1,23 @@
 import basicVS from './basic.vs';
 import basicFS from './basic.fs';
+import { radToDeg, degToRad } from '../Util';
 
-export default function(gl) {
+export default gl => {
+  class Shader {
+    constructor(vs, fs, attributes, init = () => {}) {
+      this.program = createProgram(
+        createShader(gl.VERTEX_SHADER, vs),
+        createShader(gl.FRAGMENT_SHADER, fs)
+      );
+
+      this.attributes = getAttributes(this.program, attributes);
+
+      if (init) {
+        init(this);
+      }
+    }
+  }
+
   function createShader(type, source) {
     const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
@@ -29,7 +45,7 @@ export default function(gl) {
     gl.deleteProgram(program);
   }
 
-  function getAttributes(program, names) {
+  function getAttributes(program, names, cb) {
     let out = {};
 
     names.forEach(name => {
@@ -43,21 +59,35 @@ export default function(gl) {
     return out;
   }
 
-  const basic = createProgram(
-    createShader(gl.VERTEX_SHADER, basicVS),
-    createShader(gl.FRAGMENT_SHADER, basicFS)
-  );
-
   return {
-    basic: {
-      shader: basic,
-      attributes: getAttributes(basic, [
-        'a_position',
-        'u_color',
-        'u_model',
-        'u_view',
-        'u_projection'
-      ])
-    }
+    basic: new Shader(
+      basicVS,
+      basicFS,
+      ['a_position', 'u_color', 'u_model', 'u_view', 'u_projection'],
+      self => {
+        // Enable our shader attribute
+        gl.enableVertexAttribArray(
+          gl.getAttribLocation(self.program, 'a_position')
+        );
+
+        const size = 3; // 3 components per iteration
+        const type = gl.FLOAT; // the data is 32bit floats
+        const normalize = false; // don't normalize the data
+        const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        const offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(
+          gl.getAttribLocation(self.program, 'a_position'),
+          size,
+          type,
+          normalize,
+          stride,
+          offset
+        );
+
+        self.data = {
+          size
+        };
+      }
+    )
   };
-}
+};
