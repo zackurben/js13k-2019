@@ -29,10 +29,35 @@ export default function(gl) {
     gl.deleteProgram(program);
   }
 
+  function getAttributes(program, names) {
+    let out = {};
+
+    names.forEach(name => {
+      if (name.startsWith('a_')) {
+        out[name] = gl.getAttribLocation(program, name);
+      } else if (name.startsWith('u_')) {
+        out[name] = gl.getUniformLocation(program, name);
+      }
+    });
+
+    return out;
+  }
+
+  const basic = createProgram(
+    createShader(gl.VERTEX_SHADER, basicVS),
+    createShader(gl.FRAGMENT_SHADER, basicFS)
+  );
+
   return {
-    basic: createProgram(
-      createShader(gl.VERTEX_SHADER, basicVS),
-      createShader(gl.FRAGMENT_SHADER, basicFS)
-    )
+    basic: {
+      shader: basic,
+      attributes: getAttributes(basic, [
+        'a_position',
+        'u_color',
+        'u_model',
+        'u_view',
+        'u_projection'
+      ])
+    }
   };
 }

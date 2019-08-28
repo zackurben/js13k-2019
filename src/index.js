@@ -26,8 +26,6 @@ function degToRad(d) {
   return (d * Math.PI) / 180;
 }
 
-const program = basic;
-
 //
 // MAIN
 //
@@ -352,13 +350,6 @@ const objs = [
   return item;
 });
 
-// Get all our shader attributes
-const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-const colorLocation = gl.getUniformLocation(program, 'u_color');
-const modelLocation = gl.getUniformLocation(program, 'u_model');
-const viewLocation = gl.getUniformLocation(program, 'u_view');
-const projectionLocation = gl.getUniformLocation(program, 'u_projection');
-
 // Create our buffer
 const positionBuffer = gl.createBuffer();
 
@@ -369,7 +360,7 @@ const vao = gl.createVertexArray();
 gl.bindVertexArray(vao);
 
 // Enable our shader attribute
-gl.enableVertexAttribArray(positionAttributeLocation);
+gl.enableVertexAttribArray(basic.attributes.a_position);
 
 // Bind our rendering buffer to the current ARRAY_BUFFER
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -379,14 +370,7 @@ const type = gl.FLOAT; // the data is 32bit floats
 const normalize = false; // don't normalize the data
 const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
 const offset = 0; // start at the beginning of the buffer
-gl.vertexAttribPointer(
-  positionAttributeLocation,
-  size,
-  type,
-  normalize,
-  stride,
-  offset
-);
+gl.vertexAttribPointer(basic.attributes.a_position, size, type, normalize, stride, offset);
 
 // Define the viewport dimensions.
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -404,7 +388,7 @@ let delta;
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Tell it to use our program (pair of shaders)
-  gl.useProgram(program);
+  gl.useProgram(basic.shader);
 
   // Bind the attribute/buffer set we want.
   gl.bindVertexArray(vao);
@@ -417,11 +401,11 @@ let delta;
     const { data, color, getMatrix, animation } = item;
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-    gl.uniform4f(colorLocation, ...color);
-    gl.uniformMatrix4fv(modelLocation, false, getMatrix());
-    gl.uniformMatrix4fv(viewLocation, false, player.getCamera());
+    gl.uniform4f(basic.attributes.u_color, ...color);
+    gl.uniformMatrix4fv(basic.attributes.u_model, false, getMatrix());
+    gl.uniformMatrix4fv(basic.attributes.u_view, false, player.getCamera());
     gl.uniformMatrix4fv(
-      projectionLocation,
+      basic.attributes.u_projection,
       false,
       m4.perspective(fieldOfViewRadians, aspect, zNear, zFar)
     );
