@@ -16,7 +16,7 @@ if (!gl) {
 
 const { basic } = Shaders(gl);
 const { Cube, Plane } = Primitive({ gl, basic });
-const camera = new Camera();
+const camera = Camera(gl);
 const player = new Player();
 const FPS = new StatCache();
 const DRAW = new StatCache();

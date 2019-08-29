@@ -21,7 +21,6 @@ export default ({ gl, basic }) => {
     }
 
     render({ vao, gTranslate, gRotate, gScale, camera, player }) {
-      const { size } = this.shader.render();
       gl.useProgram(this.shader.program);
       gl.bindVertexArray(vao);
 
@@ -44,16 +43,11 @@ export default ({ gl, basic }) => {
       gl.uniformMatrix4fv(
         this.shader.u_projection,
         false,
-        m4.perspective(
-          camera.fieldOfViewRadians,
-          camera.aspect,
-          camera.zNear,
-          camera.zFar
-        )
+        camera.getMatrix()
       );
 
       const offset = 0;
-      gl.drawArrays(gl.TRIANGLES, offset, this.data.length / size);
+      gl.drawArrays(gl.TRIANGLES, offset, this.data.length / this.shader.size);
     }
 
     getMatrix({ gTranslate, gRotate, gScale }) {
