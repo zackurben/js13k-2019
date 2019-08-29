@@ -20,7 +20,11 @@ export default ({ gl, basic }) => {
       this.shader = shader;
     }
 
-    render({ gTranslate, gRotate, gScale, camera, player }) {
+    render({ vao, gTranslate, gRotate, gScale, camera, player }) {
+      const { size } = this.shader.render();
+      gl.useProgram(this.shader.program);
+      gl.bindVertexArray(vao);
+
       gl.bufferData(
         gl.ARRAY_BUFFER,
         new Float32Array(this.data),
@@ -49,11 +53,7 @@ export default ({ gl, basic }) => {
       );
 
       const offset = 0;
-      gl.drawArrays(
-        gl.TRIANGLES,
-        offset,
-        this.data.length / this.shader.data.size
-      );
+      gl.drawArrays(gl.TRIANGLES, offset, this.data.length / size);
     }
 
     getMatrix({ gTranslate, gRotate, gScale }) {

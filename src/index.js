@@ -26,6 +26,16 @@ let gTranslate = [0, 0, -5];
 let gRotate = [0, 0, 0];
 let gScale = [1, 1, 1];
 
+// Create our primary buffer and VAO
+const buffer = gl.createBuffer();
+const vao = gl.createVertexArray();
+
+// Bind our VAO
+gl.bindVertexArray(vao);
+
+// Bind our rendering buffer to the current ARRAY_BUFFER
+gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
 // Our list of items to render
 const objs = [
   // front
@@ -316,16 +326,6 @@ const objs = [
   })
 ];
 
-// Create our primary buffer and VAO
-const buffer = gl.createBuffer();
-const vao = gl.createVertexArray();
-
-// Bind our VAO
-gl.bindVertexArray(vao);
-
-// Bind our rendering buffer to the current ARRAY_BUFFER
-gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-
 // RENDER
 // Define the viewport dimensions.
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -343,16 +343,16 @@ let delta;
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Tell it to use our program (pair of shaders)
-  gl.useProgram(basic.shader);
+  // gl.useProgram(basic.shader);
 
   // Bind the attribute/buffer set we want.
-  gl.bindVertexArray(vao);
+  // gl.bindVertexArray(vao);
 
   // Render each of our objects
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
     if (item.render)
-      item.render({ gTranslate, gRotate, gScale, camera, player });
+      item.render({ vao, gTranslate, gRotate, gScale, camera, player });
   });
 
   if (fps) {
