@@ -4,6 +4,7 @@ import m4 from './Matrix';
 import Primitive from './Primitive';
 import Player from './Player';
 import Shaders from './shaders';
+import ShaderUtils from './shaders/ShaderUtils';
 import Camera from './Camera';
 import { radToDeg, degToRad, arrayAdd } from './Util';
 
@@ -14,8 +15,9 @@ if (!gl) {
   console.error('no gl context');
 }
 
+const {createShader, createProgram } = ShaderUtils(gl);
 const { basic } = Shaders(gl);
-const { Cube, Plane } = Primitive({ gl, basic });
+const { Cube, Plane } = Primitive({ basic });
 const camera = Camera(gl);
 const player = new Player();
 const FPS = new StatCache();
@@ -30,11 +32,28 @@ let gScale = [1, 1, 1];
 const buffer = gl.createBuffer();
 const vao = gl.createVertexArray();
 
-// Bind our VAO
-gl.bindVertexArray(vao);
+// // Bind our VAO
+// gl.bindVertexArray(vao);
 
-// Bind our rendering buffer to the current ARRAY_BUFFER
-gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+// // Enable our shader attribute
+// gl.enableVertexAttribArray(basic.attributes.a_position);
+
+// // Bind our rendering buffer to the current ARRAY_BUFFER
+// gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+// const size = 3; // 3 components per iteration
+// const type = gl.FLOAT; // the data is 32bit floats
+// const normalize = false; // don't normalize the data
+// const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+// const offset = 0; // start at the beginning of the buffer
+// gl.vertexAttribPointer(
+//   basic.attributes.a_position,
+//   size,
+//   type,
+//   normalize,
+//   stride,
+//   offset
+// );
 
 // Our list of items to render
 const objs = [
@@ -342,18 +361,20 @@ let delta;
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Tell it to use our program (pair of shaders)
-  gl.useProgram(basic.shader);
-
-  // Bind the attribute/buffer set we want.
-  gl.bindVertexArray(vao);
-
   // Render each of our objects
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
-    // if (item.render)
-    //   item.render({ vao, gTranslate, gRotate, gScale, camera, player });
 
+    basic.init({buffer, vao});
+
+    // Tell it to use our program (pair of shaders)
+    gl.useProgram(basic.program);
+  
+    // Bind the attribute/buffer set we want.
+    gl.bindVertexArray(vao);
+  
+    // if (item.render)
+    // item.render({ gl, buffer, vao, gTranslate, gRotate, gScale, camera, player });
     
     gl.bufferData(
       gl.ARRAY_BUFFER,
@@ -372,7 +393,7 @@ let delta;
       player.getCamera()
     );
     gl.uniformMatrix4fv(
-      basic.u_projection,
+      basic.attributes.u_projection,
       false,
       camera.getMatrix()
     );

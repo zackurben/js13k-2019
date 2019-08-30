@@ -42,10 +42,35 @@ export default gl => {
     'u_view',
     'u_projection'
   ]);
-  
+
+  const size = 3; // 3 components per iteration
+  const type = gl.FLOAT; // the data is 32bit floats
+  const normalize = false; // don't normalize the data
+  const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+  const offset = 0; // start at the beginning of the buffer
+
   return {
     program,
     attributes,
-    size: 3
+    size: 3,
+    init({vao, buffer}) {
+      // Bind our VAO
+      gl.bindVertexArray(vao);
+
+      // Enable our shader attribute
+      gl.enableVertexAttribArray(attributes.a_position);
+
+      // Bind our rendering buffer to the current ARRAY_BUFFER
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+      gl.vertexAttribPointer(
+        attributes.a_position,
+        size,
+        type,
+        normalize,
+        stride,
+        offset
+      );
+    }
   };
 };

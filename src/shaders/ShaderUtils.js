@@ -39,7 +39,6 @@ export default gl => {
       }
     });
 
-    console.log(out)
     return out;
   }
 

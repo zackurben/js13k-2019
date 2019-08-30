@@ -20,10 +20,7 @@ export default ({ gl, basic }) => {
       this.shader = shader;
     }
 
-    render({ vao, gTranslate, gRotate, gScale, camera, player }) {
-      // gl.useProgram(this.shader.program);
-      // gl.bindVertexArray(vao);
-
+    render({ gl, vao, buffer, gTranslate, gRotate, gScale, camera, player }) {
       gl.bufferData(
         gl.ARRAY_BUFFER,
         new Float32Array(this.data),
