@@ -21,8 +21,8 @@ export default ({ gl, basic }) => {
     }
 
     render({ vao, gTranslate, gRotate, gScale, camera, player }) {
-      gl.useProgram(this.shader.program);
-      gl.bindVertexArray(vao);
+      // gl.useProgram(this.shader.program);
+      // gl.bindVertexArray(vao);
 
       gl.bufferData(
         gl.ARRAY_BUFFER,

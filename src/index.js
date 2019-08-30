@@ -39,275 +39,275 @@ gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 // Our list of items to render
 const objs = [
   // front
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      0,
+  // {
+  //   data: [
+  //     // one
+  //     -0.5,
+  //     -0.5,
+  //     0,
 
-      // two
-      0.5,
-      0.5,
-      0,
+  //     // two
+  //     0.5,
+  //     0.5,
+  //     0,
 
-      // three
-      -0.5,
-      0.5,
-      0
-    ],
-    color: [255, 0, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      0,
+  //     // three
+  //     -0.5,
+  //     0.5,
+  //     0
+  //   ],
+  //   color: [255, 0, 0, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // {
+  //   data: [
+  //     // one
+  //     -0.5,
+  //     -0.5,
+  //     0,
 
-      // two
-      0.5,
-      -0.5,
-      0,
+  //     // two
+  //     0.5,
+  //     -0.5,
+  //     0,
 
-      // three
-      0.5,
-      0.5,
-      0
-    ],
-    color: [0, 255, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  // back
-  {
-    data: [
-      // one
-      0.5,
-      -0.5,
-      -1,
+  //     // three
+  //     0.5,
+  //     0.5,
+  //     0
+  //   ],
+  //   color: [0, 255, 0, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // // back
+  // {
+  //   data: [
+  //     // one
+  //     0.5,
+  //     -0.5,
+  //     -1,
 
-      // two
-      -0.5,
-      0.5,
-      -1,
+  //     // two
+  //     -0.5,
+  //     0.5,
+  //     -1,
 
-      // three
-      0.5,
-      0.5,
-      -1
-    ],
-    color: [0, 255, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      0.5,
-      -0.5,
-      -1,
+  //     // three
+  //     0.5,
+  //     0.5,
+  //     -1
+  //   ],
+  //   color: [0, 255, 0, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // {
+  //   data: [
+  //     // one
+  //     0.5,
+  //     -0.5,
+  //     -1,
 
-      // two
-      -0.5,
-      -0.5,
-      -1,
+  //     // two
+  //     -0.5,
+  //     -0.5,
+  //     -1,
 
-      // three
-      -0.5,
-      0.5,
-      -1
-    ],
-    color: [255, 0, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  // top
-  {
-    data: [
-      // one
-      -0.5,
-      0.5,
-      0,
+  //     // three
+  //     -0.5,
+  //     0.5,
+  //     -1
+  //   ],
+  //   color: [255, 0, 0, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // // top
+  // {
+  //   data: [
+  //     // one
+  //     -0.5,
+  //     0.5,
+  //     0,
 
-      //two
-      0.5,
-      0.5,
-      -1,
+  //     //two
+  //     0.5,
+  //     0.5,
+  //     -1,
 
-      // three
-      -0.5,
-      0.5,
-      -1
-    ],
-    color: [255, 0, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      -0.5,
-      0.5,
-      0,
+  //     // three
+  //     -0.5,
+  //     0.5,
+  //     -1
+  //   ],
+  //   color: [255, 0, 255, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // {
+  //   data: [
+  //     // one
+  //     -0.5,
+  //     0.5,
+  //     0,
 
-      //two
-      0.5,
-      0.5,
-      0,
+  //     //two
+  //     0.5,
+  //     0.5,
+  //     0,
 
-      // three
-      0.5,
-      0.5,
-      -1
-    ],
-    color: [255, 255, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  // bottom
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      -1,
+  //     // three
+  //     0.5,
+  //     0.5,
+  //     -1
+  //   ],
+  //   color: [255, 255, 255, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // // bottom
+  // {
+  //   data: [
+  //     // one
+  //     -0.5,
+  //     -0.5,
+  //     -1,
 
-      //two
-      0.5,
-      -0.5,
-      0,
+  //     //two
+  //     0.5,
+  //     -0.5,
+  //     0,
 
-      // three
-      -0.5,
-      -0.5,
-      0
-    ],
-    color: [255, 255, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      -1,
+  //     // three
+  //     -0.5,
+  //     -0.5,
+  //     0
+  //   ],
+  //   color: [255, 255, 255, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // {
+  //   data: [
+  //     // one
+  //     -0.5,
+  //     -0.5,
+  //     -1,
 
-      //two
-      0.5,
-      -0.5,
-      -1,
+  //     //two
+  //     0.5,
+  //     -0.5,
+  //     -1,
 
-      // three
-      0.5,
-      -0.5,
-      0
-    ],
-    color: [255, 0, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  // left
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      -1,
+  //     // three
+  //     0.5,
+  //     -0.5,
+  //     0
+  //   ],
+  //   color: [255, 0, 255, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // // left
+  // {
+  //   data: [
+  //     // one
+  //     -0.5,
+  //     -0.5,
+  //     -1,
 
-      //two
-      -0.5,
-      0.5,
-      0,
+  //     //two
+  //     -0.5,
+  //     0.5,
+  //     0,
 
-      // three
-      -0.5,
-      0.5,
-      -1
-    ],
-    color: [255, 255, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      -1,
+  //     // three
+  //     -0.5,
+  //     0.5,
+  //     -1
+  //   ],
+  //   color: [255, 255, 0, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // {
+  //   data: [
+  //     // one
+  //     -0.5,
+  //     -0.5,
+  //     -1,
 
-      //two
-      -0.5,
-      -0.5,
-      0,
+  //     //two
+  //     -0.5,
+  //     -0.5,
+  //     0,
 
-      // three
-      -0.5,
-      0.5,
-      0
-    ],
-    color: [0, 0, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  // right
-  {
-    data: [
-      // one
-      0.5,
-      -0.5,
-      0,
+  //     // three
+  //     -0.5,
+  //     0.5,
+  //     0
+  //   ],
+  //   color: [0, 0, 255, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // // right
+  // {
+  //   data: [
+  //     // one
+  //     0.5,
+  //     -0.5,
+  //     0,
 
-      //two
-      0.5,
-      0.5,
-      -1,
+  //     //two
+  //     0.5,
+  //     0.5,
+  //     -1,
 
-      // three
-      0.5,
-      0.5,
-      0
-    ],
-    color: [0, 0, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      0.5,
-      -0.5,
-      0,
+  //     // three
+  //     0.5,
+  //     0.5,
+  //     0
+  //   ],
+  //   color: [0, 0, 255, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
+  // {
+  //   data: [
+  //     // one
+  //     0.5,
+  //     -0.5,
+  //     0,
 
-      //two
-      0.5,
-      -0.5,
-      -1,
+  //     //two
+  //     0.5,
+  //     -0.5,
+  //     -1,
 
-      // three
-      0.5,
-      0.5,
-      -1
-    ],
-    color: [255, 255, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
+  //     // three
+  //     0.5,
+  //     0.5,
+  //     -1
+  //   ],
+  //   color: [255, 255, 0, 1],
+  //   translation: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   scale: [1, 1, 1]
+  // },
 
   new Cube({
     color: [30 / 255, 40 / 255, 40 / 255, 1],
@@ -343,16 +343,42 @@ let delta;
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Tell it to use our program (pair of shaders)
-  // gl.useProgram(basic.shader);
+  gl.useProgram(basic.shader);
 
   // Bind the attribute/buffer set we want.
-  // gl.bindVertexArray(vao);
+  gl.bindVertexArray(vao);
 
   // Render each of our objects
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
-    if (item.render)
-      item.render({ vao, gTranslate, gRotate, gScale, camera, player });
+    // if (item.render)
+    //   item.render({ vao, gTranslate, gRotate, gScale, camera, player });
+
+    
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array(item.data),
+      gl.STATIC_DRAW
+    );
+    gl.uniform4f(basic.attributes.u_color, ...item.color);
+    gl.uniformMatrix4fv(
+      basic.attributes.u_model,
+      false,
+      item.getMatrix({ gTranslate, gRotate, gScale })
+    );
+    gl.uniformMatrix4fv(
+      basic.attributes.u_view,
+      false,
+      player.getCamera()
+    );
+    gl.uniformMatrix4fv(
+      basic.u_projection,
+      false,
+      camera.getMatrix()
+    );
+
+    const offset = 0;
+    gl.drawArrays(gl.TRIANGLES, offset, item.data.length / basic.size);
   });
 
   if (fps) {
