@@ -42,7 +42,6 @@ const objs = [
     ],
     translation: [-7, -3, -3],
     rotation: [0, 0, 0],
-    scale: [3, 3, 3],
     shader: MultiColored
   }),
 
@@ -58,7 +57,7 @@ const objs = [
   new Plane({
     color: [90 / 255, 30 / 255, 45 / 255, 1],
     translation: [0, -3, 0],
-    scale: [5, 5, 5],
+    scale: [10, 10, 10],
     rotation: [0, 0, 0]
   })
 ];
