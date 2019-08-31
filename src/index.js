@@ -32,29 +32,6 @@ let gScale = [1, 1, 1];
 const buffer = gl.createBuffer();
 const vao = gl.createVertexArray();
 
-// // Bind our VAO
-// gl.bindVertexArray(vao);
-
-// // Enable our shader attribute
-// gl.enableVertexAttribArray(basic.attributes.a_position);
-
-// // Bind our rendering buffer to the current ARRAY_BUFFER
-// gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-
-// const size = 3; // 3 components per iteration
-// const type = gl.FLOAT; // the data is 32bit floats
-// const normalize = false; // don't normalize the data
-// const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-// const offset = 0; // start at the beginning of the buffer
-// gl.vertexAttribPointer(
-//   basic.attributes.a_position,
-//   size,
-//   type,
-//   normalize,
-//   stride,
-//   offset
-// );
-
 // Our list of items to render
 const objs = [
   // front
@@ -350,8 +327,6 @@ const objs = [
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 gl.enable(gl.CULL_FACE);
 gl.enable(gl.DEPTH_TEST);
-
-basic.init({ buffer, vao });
 
 let lastRender = 0;
 let delta;
