@@ -20,9 +20,10 @@ export default ({ gl, Basic }) => {
       this.shader = shader;
 
       // Init the shader.
-      const {vao, vbo} = this.shader.init(this);
+      const { vao, vbo, vao_color, vbo_color } = this.shader.init(this);
       this.vao = vao;
       this.vbo = vbo;
+      this.vbo_color = vbo_color;
     }
 
     render({ gTranslate, gRotate, gScale, player, camera }) {

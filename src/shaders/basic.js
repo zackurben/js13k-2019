@@ -83,7 +83,7 @@ export default gl => {
       return {
         vao,
         vbo
-      }
+      };
     },
     render(obj, { gTranslate, gRotate, gScale, player, camera }) {
       // Render

@@ -52,76 +52,71 @@ export default gl => {
   const normalize = false; // don't normalize the data
   const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
   const offset = 0; // start at the beginning of the buffer
-  const vao = gl.createVertexArray();
-  const vbo = gl.createBuffer();
-  const vao_color = gl.createVertexArray();
-  const vbo_color = gl.createBuffer();
-
-  // Bind our VAO
-  gl.bindVertexArray(vao);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-
-  // Specify memory layout
-  gl.vertexAttribPointer(
-    attributes.a_position,
-    size,
-    type,
-    normalize,
-    stride,
-    offset
-  );
-
-  // Enable our shader attributes
-  gl.enableVertexAttribArray(attributes.a_position);
-
-  // Bind our color vao
-  gl.bindVertexArray(vao_color);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, vbo_color);
-
-  // Specify the memory layout
-  gl.vertexAttribPointer(
-    attributes.a_color,
-    size,
-    type,
-    normalize,
-    stride,
-    offset
-  );
-
-  // Enable the shader color attribute
-  gl.enableVertexAttribArray(attributes.a_color);
 
   return {
     program,
     attributes,
     multicolored: true,
-    vao,
-    vbo,
-    vao_color,
-    vbo_color,
-    render(obj, { gTranslate, gRotate, gScale, player, camera }) {
-      // Render
-      gl.useProgram(program);
+    init(obj) {
+      const vao = gl.createVertexArray();
+      const vbo = gl.createBuffer();
+      const vbo_color = gl.createBuffer();
 
-      // Use our pre configured VAO
+      // Bind our VAO
       gl.bindVertexArray(vao);
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
       gl.bufferData(
         gl.ARRAY_BUFFER,
         new Float32Array(obj.data),
         gl.STATIC_DRAW
       );
 
-      // Use the color vao
-      gl.bindVertexArray(vao_color);
+      // Specify memory layout
+      gl.vertexAttribPointer(
+        attributes.a_position,
+        size,
+        type,
+        normalize,
+        stride,
+        offset
+      );
+
+      // Enable our shader attributes
+      gl.enableVertexAttribArray(attributes.a_position);
+
       gl.bindBuffer(gl.ARRAY_BUFFER, vbo_color);
       gl.bufferData(
         gl.ARRAY_BUFFER,
         new Float32Array(obj.color),
         gl.STATIC_DRAW
       );
+
+      // Specify the memory layout
+      gl.vertexAttribPointer(
+        attributes.a_color,
+        4,
+        type,
+        normalize,
+        stride,
+        offset
+      );
+
+      // Enable the shader color attribute
+      gl.enableVertexAttribArray(attributes.a_color);
+
+      return {
+        vao,
+        vbo,
+        vbo_color
+      };
+    },
+    render(obj, { gTranslate, gRotate, gScale, player, camera }) {
+      // Render
+      gl.useProgram(program);
+
+      // Use our pre configured VAO
+      gl.bindVertexArray(obj.vao);
 
       gl.uniformMatrix4fv(
         attributes.u_model,
