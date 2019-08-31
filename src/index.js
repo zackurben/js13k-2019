@@ -15,14 +15,8 @@ if (!gl) {
   console.error('no gl context');
 }
 
-// Create our primary buffer and VAO
-const buffer = gl.createBuffer();
-const vao = gl.createVertexArray();
-const colors = gl.createBuffer();
-const vao2 = gl.createVertexArray();
-
 const { createShader, createProgram } = ShaderUtils(gl);
-const { Basic, MultiColored } = Shaders(gl, { buffer, vao, colors, vao2 });
+const { Basic } = Shaders(gl);
 const { Cube, Plane } = Primitive({ Basic });
 const camera = Camera(gl);
 const player = new Player();
@@ -36,17 +30,12 @@ let gScale = [1, 1, 1];
 
 // Our list of items to render
 const objs = [
-  new Plane({
-    color: [
-      0, 0, 0, 1,
-      1, 0, 0, 1,
-      0, 1, 0, 1,
-      0, 0, 1, 1,
-    ],
-    translation: [-5, -3, 0],
-    rotation: [0, 0, 0],
-    shader: MultiColored
-  }),
+  // new Plane({
+  //   color: [0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1],
+  //   translation: [-5, -3, 0],
+  //   rotation: [0, 0, 0],
+  //   shader: MultiColored
+  // }),
 
   new Cube({
     color: [30 / 255, 40 / 255, 40 / 255, 1],

@@ -28,7 +28,7 @@ void main() {
 }
 `;
 
-export default (gl, { vao, buffer }) => {
+export default gl => {
   const { createShader, createProgram, getAttributes } = ShaderUtils(gl);
 
   const program = createProgram(
@@ -49,42 +49,50 @@ export default (gl, { vao, buffer }) => {
   const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
   const offset = 0; // start at the beginning of the buffer
 
-  // Bind our VAO
-  gl.bindVertexArray(vao);
-
-  // Bind our rendering buffer to the current ARRAY_BUFFER
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-
-  // Specify memory layout
-  gl.vertexAttribPointer(
-    attributes.a_position,
-    size,
-    type,
-    normalize,
-    stride,
-    offset
-  );
-
-  // Enable our shader attribute
-  gl.enableVertexAttribArray(attributes.a_position);
-
   return {
     program,
     attributes,
-    render(obj, { gTranslate, gRotate, gScale, player, camera }) {
-      // Render
-      gl.useProgram(program);
+    init(obj) {
+      const vao = gl.createVertexArray();
+      const vbo = gl.createBuffer();
 
-      // Use our pre configured VAO
+      // Bind our VAO
       gl.bindVertexArray(vao);
 
       // Bind our rendering buffer to the current ARRAY_BUFFER
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
       gl.bufferData(
         gl.ARRAY_BUFFER,
         new Float32Array(obj.data),
         gl.STATIC_DRAW
       );
+
+      // Specify memory layout
+      gl.vertexAttribPointer(
+        attributes.a_position,
+        size,
+        type,
+        normalize,
+        stride,
+        offset
+      );
+
+      // Enable our shader attribute
+      gl.enableVertexAttribArray(attributes.a_position);
+
+      return {
+        vao,
+        vbo
+      }
+    },
+    render(obj, { gTranslate, gRotate, gScale, player, camera }) {
+      // Render
+      gl.useProgram(program);
+
+      // Use our pre configured VAO
+      gl.bindVertexArray(obj.vao);
+
+      // Set geometry attributes.
       gl.uniform4f(attributes.u_color, ...obj.color);
       gl.uniformMatrix4fv(
         attributes.u_model,
@@ -94,7 +102,7 @@ export default (gl, { vao, buffer }) => {
       gl.uniformMatrix4fv(attributes.u_view, false, player.getCamera());
       gl.uniformMatrix4fv(attributes.u_projection, false, camera.getMatrix());
 
-      const offset = 0;
+      // Draw
       gl.drawArrays(gl.TRIANGLES, offset, obj.data.length / size);
     }
   };

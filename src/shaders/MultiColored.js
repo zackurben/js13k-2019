@@ -32,7 +32,7 @@ void main() {
 }
 `;
 
-export default (gl, { vao, vao2, buffer, colors }) => {
+export default gl => {
   const { createShader, createProgram, getAttributes } = ShaderUtils(gl);
 
   const program = createProgram(
@@ -52,11 +52,15 @@ export default (gl, { vao, vao2, buffer, colors }) => {
   const normalize = false; // don't normalize the data
   const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
   const offset = 0; // start at the beginning of the buffer
+  const vao = gl.createVertexArray();
+  const vbo = gl.createBuffer();
+  const vao_color = gl.createVertexArray();
+  const vbo_color = gl.createBuffer();
 
   // Bind our VAO
   gl.bindVertexArray(vao);
-  
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 
   // Specify memory layout
   gl.vertexAttribPointer(
@@ -72,14 +76,14 @@ export default (gl, { vao, vao2, buffer, colors }) => {
   gl.enableVertexAttribArray(attributes.a_position);
 
   // Bind our color vao
-  gl.bindVertexArray(vao2);
-  
-  gl.bindBuffer(gl.ARRAY_BUFFER, colors);
+  gl.bindVertexArray(vao_color);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo_color);
 
   // Specify the memory layout
   gl.vertexAttribPointer(
     attributes.a_color,
-    4,
+    size,
     type,
     normalize,
     stride,
@@ -93,16 +97,11 @@ export default (gl, { vao, vao2, buffer, colors }) => {
     program,
     attributes,
     multicolored: true,
-    render(
-      obj,
-      {
-        gTranslate,
-        gRotate,
-        gScale,
-        player,
-        camera
-      }
-    ) {
+    vao,
+    vbo,
+    vao_color,
+    vbo_color,
+    render(obj, { gTranslate, gRotate, gScale, player, camera }) {
       // Render
       gl.useProgram(program);
 
@@ -116,8 +115,8 @@ export default (gl, { vao, vao2, buffer, colors }) => {
       );
 
       // Use the color vao
-      gl.bindVertexArray(vao2);
-      gl.bindBuffer(gl.ARRAY_BUFFER, colors);
+      gl.bindVertexArray(vao_color);
+      gl.bindBuffer(gl.ARRAY_BUFFER, vbo_color);
       gl.bufferData(
         gl.ARRAY_BUFFER,
         new Float32Array(obj.color),
@@ -132,7 +131,6 @@ export default (gl, { vao, vao2, buffer, colors }) => {
       gl.uniformMatrix4fv(attributes.u_view, false, player.getCamera());
       gl.uniformMatrix4fv(attributes.u_projection, false, camera.getMatrix());
 
-      const offset = 0;
       gl.drawArrays(gl.TRIANGLES, offset, obj.data.length / size);
     }
   };
