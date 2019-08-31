@@ -53,7 +53,7 @@ export default gl => {
     program,
     attributes,
     size: 3,
-    init({vao, buffer}) {
+    init({ vao, buffer }) {
       // Bind our VAO
       gl.bindVertexArray(vao);
 

@@ -1,4 +1,4 @@
-import m4 from './Matrix'
+import m4 from './Matrix';
 import { degToRad } from './Util';
 
 export default gl => {
@@ -13,12 +13,7 @@ export default gl => {
     zNear,
     zFar,
     getMatrix: () => {
-      return m4.perspective(
-        fieldOfViewRadians,
-        aspect,
-        zNear,
-        zFar
-      )
+      return m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
     }
   };
 };

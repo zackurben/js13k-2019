@@ -20,7 +20,22 @@ export default ({ gl, basic }) => {
       this.shader = shader;
     }
 
-    render({ gl, vao, buffer, gTranslate, gRotate, gScale, camera, player }) {
+    render({
+      gl,
+      basic,
+      buffer,
+      vao,
+      gTranslate,
+      gRotate,
+      gScale,
+      camera,
+      player
+    }) {
+      this.shader.init({ buffer, vao });
+
+      // Tell it to use our program (pair of shaders)
+      gl.useProgram(this.shader.program);
+
       gl.bufferData(
         gl.ARRAY_BUFFER,
         new Float32Array(this.data),
@@ -38,7 +53,7 @@ export default ({ gl, basic }) => {
         player.getCamera()
       );
       gl.uniformMatrix4fv(
-        this.shader.u_projection,
+        this.shader.attributes.u_projection,
         false,
         camera.getMatrix()
       );

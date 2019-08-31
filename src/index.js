@@ -15,7 +15,7 @@ if (!gl) {
   console.error('no gl context');
 }
 
-const {createShader, createProgram } = ShaderUtils(gl);
+const { createShader, createProgram } = ShaderUtils(gl);
 const { basic } = Shaders(gl);
 const { Cube, Plane } = Primitive({ basic });
 const camera = Camera(gl);
@@ -351,6 +351,8 @@ gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 gl.enable(gl.CULL_FACE);
 gl.enable(gl.DEPTH_TEST);
 
+basic.init({ buffer, vao });
+
 let lastRender = 0;
 let delta;
 (function render(timestamp = 0) {
@@ -364,42 +366,18 @@ let delta;
   // Render each of our objects
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
-
-    basic.init({buffer, vao});
-
-    // Tell it to use our program (pair of shaders)
-    gl.useProgram(basic.program);
-  
-    // Bind the attribute/buffer set we want.
-    gl.bindVertexArray(vao);
-  
-    // if (item.render)
-    // item.render({ gl, buffer, vao, gTranslate, gRotate, gScale, camera, player });
-    
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(item.data),
-      gl.STATIC_DRAW
-    );
-    gl.uniform4f(basic.attributes.u_color, ...item.color);
-    gl.uniformMatrix4fv(
-      basic.attributes.u_model,
-      false,
-      item.getMatrix({ gTranslate, gRotate, gScale })
-    );
-    gl.uniformMatrix4fv(
-      basic.attributes.u_view,
-      false,
-      player.getCamera()
-    );
-    gl.uniformMatrix4fv(
-      basic.attributes.u_projection,
-      false,
-      camera.getMatrix()
-    );
-
-    const offset = 0;
-    gl.drawArrays(gl.TRIANGLES, offset, item.data.length / basic.size);
+    if (item.render)
+      item.render({
+        gl,
+        basic,
+        buffer,
+        vao,
+        gTranslate,
+        gRotate,
+        gScale,
+        camera,
+        player
+      });
   });
 
   if (fps) {
