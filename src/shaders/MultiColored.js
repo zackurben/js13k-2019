@@ -4,13 +4,17 @@ import ShaderUtils from './ShaderUtils';
 
 const vs = `#version 300 es
 in vec4 a_position;
+in vec4 a_color;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
 
+out vec4 v_color;
+
 void main() {
   gl_Position = u_projection * u_view * u_model * a_position;
+  v_color = a_color;
 }
 `;
 
@@ -19,16 +23,16 @@ const fs = `#version 300 es
 // to pick one. mediump is a good default. It means "medium precision"
 precision mediump float;
 
-uniform vec4 u_color;
+in vec4 v_color;
 
 out vec4 outColor;
 
 void main() {
-  outColor = u_color;
+  outColor = v_color;
 }
 `;
 
-export default (gl, { vao, buffer }) => {
+export default (gl, { vao, vao2, buffer, colors }) => {
   const { createShader, createProgram, getAttributes } = ShaderUtils(gl);
 
   const program = createProgram(
@@ -37,7 +41,7 @@ export default (gl, { vao, buffer }) => {
   );
   const attributes = getAttributes(program, [
     'a_position',
-    'u_color',
+    'a_color',
     'u_model',
     'u_view',
     'u_projection'
@@ -51,8 +55,7 @@ export default (gl, { vao, buffer }) => {
 
   // Bind our VAO
   gl.bindVertexArray(vao);
-
-  // Bind our rendering buffer to the current ARRAY_BUFFER
+  
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
   // Specify memory layout
@@ -65,27 +68,62 @@ export default (gl, { vao, buffer }) => {
     offset
   );
 
-  // Enable our shader attribute
+  // Enable our shader attributes
   gl.enableVertexAttribArray(attributes.a_position);
+
+  // Bind our color vao
+  gl.bindVertexArray(vao2);
+  
+  gl.bindBuffer(gl.ARRAY_BUFFER, colors);
+
+  // Specify the memory layout
+  gl.vertexAttribPointer(
+    attributes.a_color,
+    4,
+    type,
+    normalize,
+    stride,
+    offset
+  );
+
+  // Enable the shader color attribute
+  gl.enableVertexAttribArray(attributes.a_color);
 
   return {
     program,
     attributes,
-    render(obj, { gTranslate, gRotate, gScale, player, camera }) {
+    multicolored: true,
+    render(
+      obj,
+      {
+        gTranslate,
+        gRotate,
+        gScale,
+        player,
+        camera
+      }
+    ) {
       // Render
       gl.useProgram(program);
 
       // Use our pre configured VAO
       gl.bindVertexArray(vao);
-
-      // Bind our rendering buffer to the current ARRAY_BUFFER
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.bufferData(
         gl.ARRAY_BUFFER,
         new Float32Array(obj.data),
         gl.STATIC_DRAW
       );
-      gl.uniform4f(attributes.u_color, ...obj.color);
+
+      // Use the color vao
+      gl.bindVertexArray(vao2);
+      gl.bindBuffer(gl.ARRAY_BUFFER, colors);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(obj.color),
+        gl.STATIC_DRAW
+      );
+
       gl.uniformMatrix4fv(
         attributes.u_model,
         false,

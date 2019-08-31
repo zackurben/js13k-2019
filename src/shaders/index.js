@@ -1,9 +1,12 @@
-import Basic from './basic';
+import BasicShader from './Basic';
+import MultiColoredShader from './MultiColored';
 
-export default gl => {
-  const basic = Basic(gl);
+export default (gl, args) => {
+  const Basic = BasicShader(gl, args);
+  const MultiColored = MultiColoredShader(gl, args);
 
   return {
-    basic
+    Basic,
+    MultiColored
   };
 };

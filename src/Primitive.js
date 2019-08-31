@@ -1,6 +1,6 @@
 import m4 from './Matrix';
 
-export default ({ gl, basic }) => {
+export default ({ gl, Basic }) => {
   class Primitive {
     constructor({
       translation = [0, 0, 0],
@@ -9,7 +9,7 @@ export default ({ gl, basic }) => {
       data = [],
       color = [Math.random(), Math.random(), Math.random(), 1],
       update = () => {},
-      shader = basic
+      shader = Basic
     } = {}) {
       this.translation = translation;
       this.rotation = rotation;
@@ -20,46 +20,8 @@ export default ({ gl, basic }) => {
       this.shader = shader;
     }
 
-    render({
-      gl,
-      basic,
-      buffer,
-      vao,
-      gTranslate,
-      gRotate,
-      gScale,
-      camera,
-      player
-    }) {
-      this.shader.init({ buffer, vao });
-
-      // Tell it to use our program (pair of shaders)
-      gl.useProgram(this.shader.program);
-
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(this.data),
-        gl.STATIC_DRAW
-      );
-      gl.uniform4f(this.shader.attributes.u_color, ...this.color);
-      gl.uniformMatrix4fv(
-        this.shader.attributes.u_model,
-        false,
-        this.getMatrix({ gTranslate, gRotate, gScale })
-      );
-      gl.uniformMatrix4fv(
-        this.shader.attributes.u_view,
-        false,
-        player.getCamera()
-      );
-      gl.uniformMatrix4fv(
-        this.shader.attributes.u_projection,
-        false,
-        camera.getMatrix()
-      );
-
-      const offset = 0;
-      gl.drawArrays(gl.TRIANGLES, offset, this.data.length / this.shader.size);
+    render({ gTranslate, gRotate, gScale, player, camera }) {
+      this.shader.render(this, { gTranslate, gRotate, gScale, player, camera });
     }
 
     getMatrix({ gTranslate, gRotate, gScale }) {
