@@ -7,6 +7,8 @@ import Shaders from './shaders';
 import ShaderUtils from './shaders/ShaderUtils';
 import Camera from './Camera';
 import { radToDeg, degToRad, arrayAdd } from './Util';
+import Data from '../data/data.json';
+import Triangulation from './Triangulator';
 
 const canvas = document.querySelector('canvas');
 const fps = document.querySelector('div');
@@ -24,61 +26,73 @@ const FPS = new StatCache();
 const DRAW = new StatCache();
 
 // Global modifiers
-let gTranslate = [0, 0, -5];
+let gTranslate = [0, -3, -5];
 let gRotate = [0, 0, 0];
 let gScale = [1, 1, 1];
 
-// Our list of items to render
-const objs = [
-  new Plane({
-    color: [
-      1,
-      0,
-      0,
-      1,
-      0,
-      1,
-      0,
-      1,
-      0,
-      0,
-      1,
-      1,
-      //
-      1,
-      0,
-      0,
-      1,
-      0,
-      0,
-      1,
-      1,
-      0,
-      1,
-      0,
-      1
-    ],
-    translation: [-7, -3, -3],
-    rotation: [0, 0, 0],
-    shader: MultiColored
-  }),
+let types = {
+  Cube,
+  Plane
+};
 
-  new Cube({
-    color: [30 / 255, 40 / 255, 40 / 255, 1],
-    translation: [-6, 0, -10],
-    rotation: [0, 0, 0],
-    update: (delta, data) => {
-      data.rotation = arrayAdd(data.rotation, [0, delta / 1000, 0]);
-    }
-  }),
+const objs = Data.objs.map(obj => {
+  let { type, faces } = obj;
+  return new types[type]({
+    data: Triangulation(faces, Data.vertices).flat()
+  });
+});
 
-  new Plane({
-    color: [90 / 255, 30 / 255, 45 / 255, 1],
-    translation: [0, -3, 0],
-    scale: [10, 10, 10],
-    rotation: [0, 0, 0]
-  })
-];
+// // Our list of items to render
+// const objs = [
+//   new Plane({
+//     color: [
+//       1,
+//       0,
+//       0,
+//       1,
+//       0,
+//       1,
+//       0,
+//       1,
+//       0,
+//       0,
+//       1,
+//       1,
+//       //
+//       1,
+//       0,
+//       0,
+//       1,
+//       0,
+//       0,
+//       1,
+//       1,
+//       0,
+//       1,
+//       0,
+//       1
+//     ],
+//     translation: [-7, -3, -3],
+//     rotation: [0, 0, 0],
+//     shader: MultiColored
+//   }),
+
+//   new Cube({
+//     color: [30 / 255, 40 / 255, 40 / 255, 1],
+//     translation: [-6, 0, -10],
+//     rotation: [0, 0, 0],
+//     update: (delta, data) => {
+//       data.rotation = arrayAdd(data.rotation, [0, delta / 1000, 0]);
+//     }
+//   }),
+
+//   new Plane({
+//     color: [90 / 255, 30 / 255, 45 / 255, 1],
+//     translation: [0, -3, 0],
+//     scale: [10, 10, 10],
+//     rotation: [0, 0, 0]
+//   })
+// ];
 
 // RENDER
 // Define the viewport dimensions.
