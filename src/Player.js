@@ -26,7 +26,7 @@ export default class Player {
   }
 
   updateCamera(delta) {
-    this.camera = m4.inverse(m4.translate(m4.identity(), ...this.position));
+    this.camera = m4.translate(m4.identity(), ...this.position);
   }
 
   getCamera() {
