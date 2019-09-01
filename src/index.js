@@ -36,9 +36,10 @@ let types = {
 };
 
 const objs = Data.objs.map(obj => {
-  let { type, faces } = obj;
+  let { type, faces, color } = obj;
   return new types[type]({
-    data: Triangulation(faces, Data.vertices).flat()
+    data: Triangulation(faces, Data.vertices).flat(),
+    color
   });
 });
 

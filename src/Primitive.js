@@ -16,6 +16,10 @@ export default ({ gl, Basic }) => {
       this.scale = scale;
       this.data = data;
       this.color = color;
+      if (this.color.length === 3) {
+        this.color.push(1)
+      }
+
       this.update = update;
       this.shader = shader;
 

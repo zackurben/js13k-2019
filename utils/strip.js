@@ -9,8 +9,8 @@ const parseMaterials = require('./parseMaterials');
  */
 const model = 'cube';
 const data = fs.readFileSync(path.resolve(__dirname, `../models/${model}.obj`));
-let materialData = {};
 
+let materials;
 let objs = [];
 let vertices = [];
 let current;
@@ -19,13 +19,12 @@ data
   .toString()
   .split('\n')
   .forEach(ln => {
-    if (ln.startsWith('#')) return;
-    if (ln.startsWith('mtllib')) return;
-    if (ln.startsWith('vn')) return;
-    if (ln.startsWith('usemtl')) return;
-    if (ln.startsWith('s')) return;
-    if (ln.startsWith('vn')) return;
-
+    if (ln.startsWith('mtllib')) {
+      materials = parseMaterials(ln.split('mtllib ').pop());
+    }
+    if (ln.startsWith('usemtl')) {
+      current.color = materials[ln.split('usemtl ').pop()];
+    }
     if (ln.startsWith('o ')) {
       // push the last current obj to the output
       if (current) {
@@ -74,7 +73,7 @@ data
         .map(f => {
           const [v] = f.toString().split('//');
           // Zero index all the vertices.
-          return parseInt(v)-1;
+          return parseInt(v) - 1;
         });
 
       current.faces.push(faces);
@@ -88,8 +87,12 @@ if (current) {
 
 fs.writeFileSync(
   path.resolve(__dirname, '../data/data.json'),
-  JSON.stringify({
-    objs,
-    vertices
-  }, undefined, 2)
+  JSON.stringify(
+    {
+      objs,
+      vertices
+    },
+    undefined,
+    2
+  )
 );
