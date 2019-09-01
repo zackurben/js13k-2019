@@ -111,7 +111,7 @@ export default gl => {
         vbo_color
       };
     },
-    render(obj, { gTranslate, gRotate, gScale, player, camera }) {
+    render(obj, { player, camera }) {
       // Render
       gl.useProgram(program);
 
@@ -121,10 +121,10 @@ export default gl => {
       gl.uniformMatrix4fv(
         attributes.u_model,
         false,
-        obj.getMatrix({ gTranslate, gRotate, gScale })
+        obj.getMatrix()
       );
-      gl.uniformMatrix4fv(attributes.u_view, false, player.getCamera());
-      gl.uniformMatrix4fv(attributes.u_projection, false, camera.getMatrix());
+      gl.uniformMatrix4fv(attributes.u_view, false, player.getView());
+      gl.uniformMatrix4fv(attributes.u_projection, false, camera.getProjectionMatrix());
 
       gl.drawArrays(gl.TRIANGLES, offset, obj.data.length / size);
     }

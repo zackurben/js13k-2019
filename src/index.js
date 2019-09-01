@@ -21,14 +21,9 @@ const { createShader, createProgram } = ShaderUtils(gl);
 const { Basic, MultiColored } = Shaders(gl);
 const { Cube, Plane } = Primitive({ Basic });
 const camera = Camera(gl);
-const player = new Player();
+const player = new Player(camera, {position: [0, -3, -5], rotation: [0,0,0]});
 const FPS = new StatCache();
 const DRAW = new StatCache();
-
-// Global modifiers
-let gTranslate = [0, -3, -5];
-let gRotate = [0, 0, 0];
-let gScale = [1, 1, 1];
 
 let types = {
   Cube,
@@ -42,58 +37,6 @@ const objs = Data.objs.map(obj => {
     color
   });
 });
-
-// // Our list of items to render
-// const objs = [
-//   new Plane({
-//     color: [
-//       1,
-//       0,
-//       0,
-//       1,
-//       0,
-//       1,
-//       0,
-//       1,
-//       0,
-//       0,
-//       1,
-//       1,
-//       //
-//       1,
-//       0,
-//       0,
-//       1,
-//       0,
-//       0,
-//       1,
-//       1,
-//       0,
-//       1,
-//       0,
-//       1
-//     ],
-//     translation: [-7, -3, -3],
-//     rotation: [0, 0, 0],
-//     shader: MultiColored
-//   }),
-
-//   new Cube({
-//     color: [30 / 255, 40 / 255, 40 / 255, 1],
-//     translation: [-6, 0, -10],
-//     rotation: [0, 0, 0],
-//     update: (delta, data) => {
-//       data.rotation = arrayAdd(data.rotation, [0, delta / 1000, 0]);
-//     }
-//   }),
-
-//   new Plane({
-//     color: [90 / 255, 30 / 255, 45 / 255, 1],
-//     translation: [0, -3, 0],
-//     scale: [10, 10, 10],
-//     rotation: [0, 0, 0]
-//   })
-// ];
 
 // RENDER
 // Define the viewport dimensions.
@@ -115,7 +58,7 @@ let delta;
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
     if (item.render)
-      item.render({ gTranslate, gRotate, gScale, player, camera });
+      item.render({ player, camera });
   });
 
   if (fps) {

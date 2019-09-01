@@ -10,6 +10,8 @@ export default class Input {
     this.left = left;
     this.forward = forward;
     this.back = back;
+    this.viewSpeed = 1;
+    this.rotation;
 
     document.addEventListener('keydown', e => {
       this.keys[e.code] = true;
@@ -17,6 +19,14 @@ export default class Input {
 
     document.addEventListener('keyup', e => {
       this.keys[e.code] = false;
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!e.isTrusted) return;
+
+      const {clientX, clientY, movementX, movementY, offsetX, offsetY} = e;
+      console.log(clientX, clientY, movementX, movementY);
+      this.rotation = [movementX, movementY, 0].map(i => parseFloat(i));
     });
   }
 
@@ -42,5 +52,17 @@ export default class Input {
     }
 
     return [x, y, z];
+  }
+
+  getRotation() {
+    if (!this.rotation) {
+      return [0,0,0]
+    }
+
+    // Return the latest change and reset the rotation.
+    const cache = this.rotation;
+    this.rotation = [0, 0, 0];
+
+    return cache;
   }
 }
