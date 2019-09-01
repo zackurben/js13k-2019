@@ -3,13 +3,17 @@ export default class Input {
     right = 'ArrowRight',
     left = 'ArrowLeft',
     forward = 'ArrowUp',
-    back = 'ArrowDown'
+    back = 'ArrowDown',
+    up = 'NumpadAdd',
+    down = 'NumpadSubtract',
   } = {}) {
     this.keys = {};
     this.right = right;
     this.left = left;
     this.forward = forward;
     this.back = back;
+    this.up = up;
+    this.down = down;
     this.viewSpeed = 1;
     this.rotation;
 
@@ -49,6 +53,12 @@ export default class Input {
     }
     if (this.keys[this.back]) {
       z = 1;
+    }
+    if (this.keys[this.up]) {
+      y = 1;
+    }
+    if (this.keys[this.down]) {
+      y = -1;
     }
 
     return [x, y, z];
