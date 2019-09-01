@@ -10,10 +10,15 @@
     "prettier-build": "prettier --single-quote --write \"dist/*.{js,html}\"",
     "build": "webpack --config webpack.prod.js",
     "build:test": "serve dist/",
-    "watch": "webpack --progress --watch --config webpack.dev.js"
+    "watch": "webpack --progress --watch --config webpack.dev.js",
+    "data": "node utils/strip.js"
   },
   "author": "Zack Urben <zackurben@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/zackurben/js13k-2019.git"
+  },
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.5.5",

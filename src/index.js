@@ -3,11 +3,12 @@ import StatCache from './StatCache';
 import m4 from './Matrix';
 import Primitive from './Primitive';
 import Player from './Player';
-import Util from './Util';
-
-const player = new Player();
-const FPS = new StatCache();
-const DRAW = new StatCache();
+import Shaders from './shaders';
+import ShaderUtils from './shaders/ShaderUtils';
+import Camera from './Camera';
+import { radToDeg, degToRad, arrayAdd } from './Util';
+import Data from '../data/data.json';
+import Triangulation from './Triangulator';
 
 const canvas = document.querySelector('canvas');
 const fps = document.querySelector('div');
@@ -16,406 +17,85 @@ if (!gl) {
   console.error('no gl context');
 }
 
-function radToDeg(r) {
-  return (r * 180) / Math.PI;
-}
+const { createShader, createProgram } = ShaderUtils(gl);
+const { Basic, MultiColored } = Shaders(gl);
+const { Cube, Plane } = Primitive({ Basic });
+const camera = Camera(gl);
+const player = new Player();
+const FPS = new StatCache();
+const DRAW = new StatCache();
 
-function degToRad(d) {
-  return (d * Math.PI) / 180;
-}
-
-const vSource = `#version 300 es
-
-in vec4 a_position;
-
-uniform mat4 u_model;
-uniform mat4 u_view;
-uniform mat4 u_projection;
-
-void main() {
-  gl_Position = u_projection * u_view * u_model * a_position;
-}
-`;
-
-const fSource = `#version 300 es
-
-// fragment shaders don't have a default precision so we need
-// to pick one. mediump is a good default. It means "medium precision"
-precision mediump float;
-
-uniform vec4 u_color;
-
-out vec4 outColor;
-
-void main() {
-  outColor = u_color;
-}
-`;
-
-const vertexShader = createShader(gl, gl.VERTEX_SHADER, vSource);
-const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fSource);
-const program = createProgram(gl, vertexShader, fragmentShader);
-
-//
-// MAIN
-//
-
-let fieldOfViewRadians = degToRad(60);
-const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-let zNear = 1;
-let zFar = 2000;
-let gTranslate = [0, 0, -5];
+// Global modifiers
+let gTranslate = [0, -3, -5];
 let gRotate = [0, 0, 0];
 let gScale = [1, 1, 1];
 
-// Our list of items to render
-const objs = [
-  // front
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      0,
+let types = {
+  Cube,
+  Plane
+};
 
-      // two
-      0.5,
-      0.5,
-      0,
-
-      // three
-      -0.5,
-      0.5,
-      0
-    ],
-    color: [255, 0, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      0,
-
-      // two
-      0.5,
-      -0.5,
-      0,
-
-      // three
-      0.5,
-      0.5,
-      0
-    ],
-    color: [0, 255, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  // back
-  {
-    data: [
-      // one
-      0.5,
-      -0.5,
-      -1,
-
-      // two
-      -0.5,
-      0.5,
-      -1,
-
-      // three
-      0.5,
-      0.5,
-      -1
-    ],
-    color: [0, 255, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      0.5,
-      -0.5,
-      -1,
-
-      // two
-      -0.5,
-      -0.5,
-      -1,
-
-      // three
-      -0.5,
-      0.5,
-      -1
-    ],
-    color: [255, 0, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  // top
-  {
-    data: [
-      // one
-      -0.5,
-      0.5,
-      0,
-
-      //two
-      0.5,
-      0.5,
-      -1,
-
-      // three
-      -0.5,
-      0.5,
-      -1
-    ],
-    color: [255, 0, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      -0.5,
-      0.5,
-      0,
-
-      //two
-      0.5,
-      0.5,
-      0,
-
-      // three
-      0.5,
-      0.5,
-      -1
-    ],
-    color: [255, 255, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  // bottom
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      -1,
-
-      //two
-      0.5,
-      -0.5,
-      0,
-
-      // three
-      -0.5,
-      -0.5,
-      0
-    ],
-    color: [255, 255, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      -1,
-
-      //two
-      0.5,
-      -0.5,
-      -1,
-
-      // three
-      0.5,
-      -0.5,
-      0
-    ],
-    color: [255, 0, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  // left
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      -1,
-
-      //two
-      -0.5,
-      0.5,
-      0,
-
-      // three
-      -0.5,
-      0.5,
-      -1
-    ],
-    color: [255, 255, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      -0.5,
-      -0.5,
-      -1,
-
-      //two
-      -0.5,
-      -0.5,
-      0,
-
-      // three
-      -0.5,
-      0.5,
-      0
-    ],
-    color: [0, 0, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  // right
-  {
-    data: [
-      // one
-      0.5,
-      -0.5,
-      0,
-
-      //two
-      0.5,
-      0.5,
-      -1,
-
-      // three
-      0.5,
-      0.5,
-      0
-    ],
-    color: [0, 0, 255, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-  {
-    data: [
-      // one
-      0.5,
-      -0.5,
-      0,
-
-      //two
-      0.5,
-      -0.5,
-      -1,
-
-      // three
-      0.5,
-      0.5,
-      -1
-    ],
-    color: [255, 255, 0, 1],
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1]
-  },
-
-  Primitive.cube({
-    color: [30 / 255, 40 / 255, 40 / 255, 1],
-    translation: [-6, 0, -10],
-    rotation: [0, 0, 0],
-    update: (delta, data) => {
-      data.rotation = Util.arrayAdd(data.rotation, [0, delta / 1000, 0]);
-    }
-  }),
-
-  Primitive.plane({
-    color: [90/255, 30/255, 45/255, 1],
-    translation: [0, -3, 0],
-    scale: [10, 10, 10],
-    rotation: [0, 0, 0]
-  })
-].map(item => {
-  item.color = item.color || [Math.random(), Math.random(), Math.random(), 1];
-  item.translation = item.translation || [0, 0, 0];
-  item.rotation = item.rotation || [0, 0, 0];
-  item.scale = item.scale || [1, 1, 1];
-
-  item.getMatrix = () => {
-    let matrix = m4.identity();
-    matrix = m4.translate(matrix, ...item.translation);
-    matrix = m4.translate(matrix, ...gTranslate);
-    matrix = m4.xRotate(matrix, item.rotation[0]);
-    matrix = m4.xRotate(matrix, gRotate[0]);
-    matrix = m4.yRotate(matrix, item.rotation[1]);
-    matrix = m4.yRotate(matrix, gRotate[1]);
-    matrix = m4.zRotate(matrix, item.rotation[2]);
-    matrix = m4.zRotate(matrix, gRotate[2]);
-    matrix = m4.scale(matrix, ...item.scale);
-    matrix = m4.scale(matrix, ...gScale);
-    return matrix;
-  };
-
-  return item;
+const objs = Data.objs.map(obj => {
+  let { type, faces, color } = obj;
+  return new types[type]({
+    data: Triangulation(faces, Data.vertices).flat(),
+    color
+  });
 });
 
-// Get all our shader attributes
-const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-const colorLocation = gl.getUniformLocation(program, 'u_color');
-const modelLocation = gl.getUniformLocation(program, 'u_model');
-const viewLocation = gl.getUniformLocation(program, 'u_view');
-const projectionLocation = gl.getUniformLocation(program, 'u_projection');
+// // Our list of items to render
+// const objs = [
+//   new Plane({
+//     color: [
+//       1,
+//       0,
+//       0,
+//       1,
+//       0,
+//       1,
+//       0,
+//       1,
+//       0,
+//       0,
+//       1,
+//       1,
+//       //
+//       1,
+//       0,
+//       0,
+//       1,
+//       0,
+//       0,
+//       1,
+//       1,
+//       0,
+//       1,
+//       0,
+//       1
+//     ],
+//     translation: [-7, -3, -3],
+//     rotation: [0, 0, 0],
+//     shader: MultiColored
+//   }),
 
-// Create our buffer
-const positionBuffer = gl.createBuffer();
+//   new Cube({
+//     color: [30 / 255, 40 / 255, 40 / 255, 1],
+//     translation: [-6, 0, -10],
+//     rotation: [0, 0, 0],
+//     update: (delta, data) => {
+//       data.rotation = arrayAdd(data.rotation, [0, delta / 1000, 0]);
+//     }
+//   }),
 
-// Create our VAO for our new buffer
-const vao = gl.createVertexArray();
+//   new Plane({
+//     color: [90 / 255, 30 / 255, 45 / 255, 1],
+//     translation: [0, -3, 0],
+//     scale: [10, 10, 10],
+//     rotation: [0, 0, 0]
+//   })
+// ];
 
-// Bind our VAO
-gl.bindVertexArray(vao);
-
-// Enable our shader attribute
-gl.enableVertexAttribArray(positionAttributeLocation);
-
-// Bind our rendering buffer to the current ARRAY_BUFFER
-gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-const size = 3; // 3 components per iteration
-const type = gl.FLOAT; // the data is 32bit floats
-const normalize = false; // don't normalize the data
-const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-const offset = 0; // start at the beginning of the buffer
-gl.vertexAttribPointer(
-  positionAttributeLocation,
-  size,
-  type,
-  normalize,
-  stride,
-  offset
-);
-
+// RENDER
 // Define the viewport dimensions.
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 gl.enable(gl.CULL_FACE);
@@ -431,31 +111,11 @@ let delta;
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Tell it to use our program (pair of shaders)
-  gl.useProgram(program);
-
-  // Bind the attribute/buffer set we want.
-  gl.bindVertexArray(vao);
-
   // Render each of our objects
   objs.forEach(item => {
-    if (item.update) {
-      item.update(delta, item);
-    }
-    const { data, color, getMatrix, animation } = item;
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-    gl.uniform4f(colorLocation, ...color);
-    gl.uniformMatrix4fv(modelLocation, false, getMatrix());
-    gl.uniformMatrix4fv(viewLocation, false, player.getCamera());
-    gl.uniformMatrix4fv(
-      projectionLocation,
-      false,
-      m4.perspective(fieldOfViewRadians, aspect, zNear, zFar)
-    );
-
-    const offset = 0;
-    gl.drawArrays(gl.TRIANGLES, offset, data.length / size);
+    if (item.update) item.update(delta, item);
+    if (item.render)
+      item.render({ gTranslate, gRotate, gScale, player, camera });
   });
 
   if (fps) {
@@ -469,30 +129,3 @@ let delta;
   lastRender = timestamp;
   return requestAnimationFrame(render);
 })();
-
-function createShader(gl, type, source) {
-  const shader = gl.createShader(type);
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-  if (success) {
-    return shader;
-  }
-
-  console.log(gl.getShaderInfoLog(shader));
-  gl.deleteShader(shader);
-}
-
-function createProgram(gl, vertexShader, fragmentShader) {
-  const program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-  const success = gl.getProgramParameter(program, gl.LINK_STATUS);
-  if (success) {
-    return program;
-  }
-
-  console.log(gl.getProgramInfoLog(program));
-  gl.deleteProgram(program);
-}
