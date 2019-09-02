@@ -20,13 +20,14 @@ const { Cube, Plane } = Primitive({ Basic });
 const camera = Camera(gl);
 const input = Input({ canvas });
 const player = Player({
-  position: [0, 2, 10],
+  position: [0, 0, 0],
   rotation: [0, 0, 0]
 });
+const cameraOffset = [0, 2, 10];
 
 // Add a camera script to follow the player.
 camera.update = delta => {
-  camera.position = arrayAdd(player.position, [0, 2, -5]);
+  camera.position = arrayAdd(player.position, cameraOffset);
   camera.rotation = player.rotation;
 };
 input.update = delta => {
@@ -86,7 +87,9 @@ let delta;
     fps.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
     player position: ${JSON.stringify(player.position)}
-    player rotation: ${JSON.stringify(player.rotation)}`;
+    player rotation: ${JSON.stringify(player.rotation)}
+    camera position: ${JSON.stringify(camera.position)}
+    camera rotation: ${JSON.stringify(camera.rotation)}`;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);

@@ -111,7 +111,7 @@ export default gl => {
         vbo_color
       };
     },
-    render(obj, { player }) {
+    render(obj, { player, camera }) {
       // Render
       gl.useProgram(program);
 
@@ -119,7 +119,7 @@ export default gl => {
       gl.bindVertexArray(obj.vao);
 
       gl.uniformMatrix4fv(attributes.u_model, false, obj.getMatrix());
-      gl.uniformMatrix4fv(attributes.u_view, false, player.getView());
+      gl.uniformMatrix4fv(attributes.u_view, false, camera.getView());
       gl.uniformMatrix4fv(
         attributes.u_projection,
         false,
