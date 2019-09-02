@@ -85,7 +85,7 @@ export default gl => {
         vbo
       };
     },
-    render(obj, { player }) {
+    render(obj, { player, camera }) {
       // Render
       gl.useProgram(program);
 
@@ -99,7 +99,7 @@ export default gl => {
       gl.uniformMatrix4fv(
         attributes.u_projection,
         false,
-        player.camera.getProjectionMatrix()
+        camera.getProjectionMatrix()
       );
 
       // Draw

@@ -1,99 +1,106 @@
-export default class Input {
-  constructor({
-    right = 'ArrowRight',
-    left = 'ArrowLeft',
-    forward = 'ArrowUp',
-    back = 'ArrowDown',
-    up = 'NumpadAdd',
-    down = 'NumpadSubtract',
-    pause = 'Escape',
-    invertedView = true,
-    canvas
-  } = {}) {
-    this.keys = {};
-    this.right = right;
-    this.left = left;
-    this.forward = forward;
-    this.back = back;
-    this.up = up;
-    this.down = down;
-    this.viewSpeed = 1;
-    this.rotation;
-    this.invertedView = invertedView;
-    this.pause = pause;
-    this.paused = true;
+'use strict';
 
-    document.addEventListener('keydown', e => {
-      this.keys[e.code] = true;
-    });
+export default ({
+  right = 'ArrowRight',
+  left = 'ArrowLeft',
+  forward = 'ArrowUp',
+  back = 'ArrowDown',
+  up = 'NumpadAdd',
+  down = 'NumpadSubtract',
+  pause = 'Escape',
+  invertedView = true,
+  paused = true,
+  canvas
+} = {}) => {
+  let keys = {};
+  let viewSpeed = 1;
+  let rotation;
 
-    document.addEventListener('keyup', e => {
-      this.keys[e.code] = false;
-    });
+  document.addEventListener('keydown', e => {
+    keys[e.code] = true;
+  });
 
-    document.addEventListener('click', e => {
-      if (this.paused) {
-        this.paused = false;
-        canvas.requestPointerLock();
-        console.log('running');
+  document.addEventListener('keyup', e => {
+    keys[e.code] = false;
+  });
+
+  document.addEventListener('click', e => {
+    if (paused) {
+      paused = false;
+      canvas.requestPointerLock();
+      console.log('running');
+    }
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!e.isTrusted) return;
+    if (paused) return;
+
+    const { clientX, clientY, movementX, movementY, offsetX, offsetY } = e;
+    // console.log(clientX, clientY, movementX, movementY);
+    rotation = [movementX, movementY, 0].map(i => parseFloat(i));
+  });
+
+  return {
+    right,
+    left,
+    forward,
+    back,
+    up,
+    down,
+    pause,
+    paused,
+    invertedView,
+    keys,
+    viewSpeed,
+    rotation,
+    canvas,
+    getKeys() {
+      return keys;
+    },
+
+    getMovement() {
+      let x = 0;
+      let y = 0;
+      let z = 0;
+      if (keys[right]) {
+        x = 1;
       }
-    });
-
-    document.addEventListener('mousemove', e => {
-      if (!e.isTrusted) return;
-      if (this.paused) return;
-
-      const { clientX, clientY, movementX, movementY, offsetX, offsetY } = e;
-      // console.log(clientX, clientY, movementX, movementY);
-      this.rotation = [movementX, movementY, 0].map(i => parseFloat(i));
-    });
-  }
-
-  getKeys() {
-    return this.keys;
-  }
-
-  getMovement() {
-    let x = 0;
-    let y = 0;
-    let z = 0;
-    if (this.keys[this.right]) {
-      x = 1;
-    }
-    if (this.keys[this.left]) {
-      x = -1;
-    }
-    if (this.keys[this.forward]) {
-      z = -1;
-    }
-    if (this.keys[this.back]) {
-      z = 1;
-    }
-    if (this.keys[this.up]) {
-      y = 1;
-    }
-    if (this.keys[this.down]) {
-      y = -1;
-    }
-    if (this.keys[this.pause]) {
-      if (!this.paused) {
-        this.paused = true;
-        console.log('paused');
+      if (keys[left]) {
+        x = -1;
       }
+      if (keys[forward]) {
+        z = -1;
+      }
+      if (keys[back]) {
+        z = 1;
+      }
+      if (keys[up]) {
+        y = 1;
+      }
+      if (keys[down]) {
+        y = -1;
+      }
+      if (keys[pause]) {
+        if (!paused) {
+          paused = true;
+          console.log('paused');
+        }
+      }
+
+      return [x, y, z];
+    },
+
+    getRotation() {
+      if (!rotation) {
+        return [0, 0, 0];
+      }
+
+      // Return the latest change and reset the rotation.
+      const cache = rotation;
+      rotation = [0, 0, 0];
+
+      return cache.map(item => (invertedView ? -item : item));
     }
-
-    return [x, y, z];
-  }
-
-  getRotation() {
-    if (!this.rotation) {
-      return [0, 0, 0];
-    }
-
-    // Return the latest change and reset the rotation.
-    const cache = this.rotation;
-    this.rotation = [0, 0, 0];
-
-    return cache.map(item => (this.invertedView ? -item : item));
-  }
-}
+  };
+};

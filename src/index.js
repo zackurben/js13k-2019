@@ -1,14 +1,12 @@
-import Input from './Input';
 import StatCache from './StatCache';
-import m4 from './Matrix';
 import Primitive from './Primitive';
 import Player from './Player';
 import Shaders from './shaders';
-import ShaderUtils from './shaders/ShaderUtils';
 import Camera from './Camera';
-import { radToDeg, degToRad, arrayAdd } from './Util';
 import Data from '../data/data.json';
 import Triangulation from './Triangulator';
+import { arrayAdd } from './Util';
+import Input from './Input';
 
 const canvas = document.querySelector('canvas');
 const fps = document.querySelector('div');
@@ -17,15 +15,32 @@ if (!gl) {
   console.error('no gl context');
 }
 
-const { createShader, createProgram } = ShaderUtils(gl);
 const { Basic, MultiColored } = Shaders(gl);
 const { Cube, Plane } = Primitive({ Basic });
 const camera = Camera(gl);
-const player = new Player(camera, {
+const input = Input({ canvas });
+const player = Player({
   position: [0, 2, 10],
-  rotation: [0, 0, 0],
-  canvas
+  rotation: [0, 0, 0]
 });
+
+// Add a camera script to follow the player.
+camera.update = delta => {
+  camera.position = arrayAdd(player.position, [0, 2, -5]);
+  camera.rotation = player.rotation;
+};
+input.update = delta => {
+  const _speed = player.speed * (delta / 1000);
+  const movement = input.getMovement().map(i => i * _speed);
+  player.position = arrayAdd(player.position, movement);
+
+  const _rspeed = input.viewSpeed * (delta / 1000);
+  const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
+  player.rotation = arrayAdd(player.rotation, [x, y, z]);
+};
+player.addComponent(camera);
+player.addComponent(input);
+
 const FPS = new StatCache();
 const DRAW = new StatCache();
 
@@ -61,7 +76,7 @@ let delta;
   // Render each of our objects
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
-    if (item.render) item.render({ player });
+    if (item.render) item.render({ player, camera });
   });
 
   if (fps) {
