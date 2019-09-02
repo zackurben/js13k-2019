@@ -30,8 +30,8 @@ export default ({ gl, Basic }) => {
       this.vbo_color = vbo_color;
     }
 
-    render({ player, camera }) {
-      this.shader.render(this, { player, camera });
+    render({ player }) {
+      this.shader.render(this, { player });
     }
 
     getMatrix() {

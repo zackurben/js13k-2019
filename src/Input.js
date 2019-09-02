@@ -6,6 +6,7 @@ export default class Input {
     back = 'ArrowDown',
     up = 'NumpadAdd',
     down = 'NumpadSubtract',
+    invertedView = true
   } = {}) {
     this.keys = {};
     this.right = right;
@@ -16,6 +17,7 @@ export default class Input {
     this.down = down;
     this.viewSpeed = 1;
     this.rotation;
+    this.invertedView = invertedView;
 
     document.addEventListener('keydown', e => {
       this.keys[e.code] = true;
@@ -73,6 +75,6 @@ export default class Input {
     const cache = this.rotation;
     this.rotation = [0, 0, 0];
 
-    return cache;
+    return cache.map(item => this.invertedView ? -item : item);
   }
 }

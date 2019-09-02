@@ -21,7 +21,7 @@ const { createShader, createProgram } = ShaderUtils(gl);
 const { Basic, MultiColored } = Shaders(gl);
 const { Cube, Plane } = Primitive({ Basic });
 const camera = Camera(gl);
-const player = new Player(camera, {position: [0, -3, -5], rotation: [0,0,0]});
+const player = new Player(camera, {position: [0, 2, 10], rotation: [0,0,0]});
 const FPS = new StatCache();
 const DRAW = new StatCache();
 
@@ -58,7 +58,7 @@ let delta;
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
     if (item.render)
-      item.render({ player, camera });
+      item.render({ player });
   });
 
   if (fps) {
@@ -67,7 +67,8 @@ let delta;
 
     fps.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
-    player position: ${JSON.stringify(player.position)}`;
+    player position: ${JSON.stringify(player.position)}
+    player rotation: ${JSON.stringify(player.rotation)}`;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);
