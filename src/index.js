@@ -23,7 +23,7 @@ const player = Player({
   position: [0, 0, 0],
   rotation: [0, 0, 0]
 });
-const cameraOffset = [0, 2, 10];
+const cameraOffset = [0, 2, 0];
 
 // Add a camera script to follow the player.
 camera.update = delta => {
