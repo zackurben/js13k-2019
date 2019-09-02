@@ -13,7 +13,7 @@ uniform mat4 u_projection;
 out vec4 v_color;
 
 void main() {
-  gl_Position = u_projection * u_view * u_model * a_position;
+  gl_Position = u_projection * inverse(u_view) * u_model * a_position;
   v_color = a_color;
 }
 `;
@@ -111,20 +111,20 @@ export default gl => {
         vbo_color
       };
     },
-    render(obj, { gTranslate, gRotate, gScale, player, camera }) {
+    render(obj, { player }) {
       // Render
       gl.useProgram(program);
 
       // Use our pre configured VAO
       gl.bindVertexArray(obj.vao);
 
+      gl.uniformMatrix4fv(attributes.u_model, false, obj.getMatrix());
+      gl.uniformMatrix4fv(attributes.u_view, false, player.getView());
       gl.uniformMatrix4fv(
-        attributes.u_model,
+        attributes.u_projection,
         false,
-        obj.getMatrix({ gTranslate, gRotate, gScale })
+        player.camera.getProjectionMatrix()
       );
-      gl.uniformMatrix4fv(attributes.u_view, false, player.getCamera());
-      gl.uniformMatrix4fv(attributes.u_projection, false, camera.getMatrix());
 
       gl.drawArrays(gl.TRIANGLES, offset, obj.data.length / size);
     }

@@ -17,7 +17,7 @@ export default ({ gl, Basic }) => {
       this.data = data;
       this.color = color;
       if (this.color.length === 3) {
-        this.color.push(1)
+        this.color.push(1);
       }
 
       this.update = update;
@@ -30,22 +30,17 @@ export default ({ gl, Basic }) => {
       this.vbo_color = vbo_color;
     }
 
-    render({ gTranslate, gRotate, gScale, player, camera }) {
-      this.shader.render(this, { gTranslate, gRotate, gScale, player, camera });
+    render({ player }) {
+      this.shader.render(this, { player });
     }
 
-    getMatrix({ gTranslate, gRotate, gScale }) {
+    getMatrix() {
       let matrix = m4.identity();
       matrix = m4.translate(matrix, ...this.translation);
-      matrix = m4.translate(matrix, ...gTranslate);
       matrix = m4.xRotate(matrix, this.rotation[0]);
-      matrix = m4.xRotate(matrix, gRotate[0]);
       matrix = m4.yRotate(matrix, this.rotation[1]);
-      matrix = m4.yRotate(matrix, gRotate[1]);
       matrix = m4.zRotate(matrix, this.rotation[2]);
-      matrix = m4.zRotate(matrix, gRotate[2]);
       matrix = m4.scale(matrix, ...this.scale);
-      matrix = m4.scale(matrix, ...gScale);
       return matrix;
     }
   }

@@ -10,7 +10,7 @@ uniform mat4 u_view;
 uniform mat4 u_projection;
 
 void main() {
-  gl_Position = u_projection * u_view * u_model * a_position;
+  gl_Position = u_projection * inverse(u_view) * u_model * a_position;
 }
 `;
 
@@ -85,7 +85,7 @@ export default gl => {
         vbo
       };
     },
-    render(obj, { gTranslate, gRotate, gScale, player, camera }) {
+    render(obj, { player }) {
       // Render
       gl.useProgram(program);
 
@@ -94,13 +94,13 @@ export default gl => {
 
       // Set geometry attributes.
       gl.uniform4f(attributes.u_color, ...obj.color);
+      gl.uniformMatrix4fv(attributes.u_model, false, obj.getMatrix());
+      gl.uniformMatrix4fv(attributes.u_view, false, player.getView());
       gl.uniformMatrix4fv(
-        attributes.u_model,
+        attributes.u_projection,
         false,
-        obj.getMatrix({ gTranslate, gRotate, gScale })
+        player.camera.getProjectionMatrix()
       );
-      gl.uniformMatrix4fv(attributes.u_view, false, player.getCamera());
-      gl.uniformMatrix4fv(attributes.u_projection, false, camera.getMatrix());
 
       // Draw
       gl.drawArrays(gl.TRIANGLES, offset, obj.data.length / size);
