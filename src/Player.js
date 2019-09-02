@@ -3,12 +3,15 @@ import Input from './Input';
 import { arrayAdd } from './Util';
 
 export default class Player {
-  constructor(camera, {position = [0, 0, 0], rotation = [0,0,0], scale = [1, 1, 1]}) {
-    this.speed = 5; 
+  constructor(
+    camera,
+    { position = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 1, 1], canvas }
+  ) {
+    this.speed = 5;
     this.position = position;
     this.rotation = rotation;
     this.scale = scale;
-    this.input = new Input();
+    this.input = new Input({ canvas });
     this.view = m4.identity();
     this.camera = camera;
   }
@@ -39,7 +42,7 @@ export default class Player {
 
   updateRotation(delta) {
     const _speed = this.input.viewSpeed * (delta / 1000);
-    const [y, x, z] = this.input.getRotation().map(i => i *= _speed);
+    const [y, x, z] = this.input.getRotation().map(i => (i *= _speed));
     this.rotation = arrayAdd(this.rotation, [x, y, z]);
   }
 

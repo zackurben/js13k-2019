@@ -6,7 +6,9 @@ export default class Input {
     back = 'ArrowDown',
     up = 'NumpadAdd',
     down = 'NumpadSubtract',
-    invertedView = true
+    pause = 'Escape',
+    invertedView = true,
+    canvas
   } = {}) {
     this.keys = {};
     this.right = right;
@@ -18,6 +20,8 @@ export default class Input {
     this.viewSpeed = 1;
     this.rotation;
     this.invertedView = invertedView;
+    this.pause = pause;
+    this.paused = true;
 
     document.addEventListener('keydown', e => {
       this.keys[e.code] = true;
@@ -27,11 +31,20 @@ export default class Input {
       this.keys[e.code] = false;
     });
 
+    document.addEventListener('click', e => {
+      if (this.paused) {
+        this.paused = false;
+        canvas.requestPointerLock();
+        console.log('running');
+      }
+    });
+
     document.addEventListener('mousemove', e => {
       if (!e.isTrusted) return;
+      if (this.paused) return;
 
-      const {clientX, clientY, movementX, movementY, offsetX, offsetY} = e;
-      console.log(clientX, clientY, movementX, movementY);
+      const { clientX, clientY, movementX, movementY, offsetX, offsetY } = e;
+      // console.log(clientX, clientY, movementX, movementY);
       this.rotation = [movementX, movementY, 0].map(i => parseFloat(i));
     });
   }
@@ -62,19 +75,25 @@ export default class Input {
     if (this.keys[this.down]) {
       y = -1;
     }
+    if (this.keys[this.pause]) {
+      if (!this.paused) {
+        this.paused = true;
+        console.log('paused');
+      }
+    }
 
     return [x, y, z];
   }
 
   getRotation() {
     if (!this.rotation) {
-      return [0,0,0]
+      return [0, 0, 0];
     }
 
     // Return the latest change and reset the rotation.
     const cache = this.rotation;
     this.rotation = [0, 0, 0];
 
-    return cache.map(item => this.invertedView ? -item : item);
+    return cache.map(item => (this.invertedView ? -item : item));
   }
 }

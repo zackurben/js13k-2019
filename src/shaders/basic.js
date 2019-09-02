@@ -94,13 +94,13 @@ export default gl => {
 
       // Set geometry attributes.
       gl.uniform4f(attributes.u_color, ...obj.color);
-      gl.uniformMatrix4fv(
-        attributes.u_model,
-        false,
-        obj.getMatrix()
-      );
+      gl.uniformMatrix4fv(attributes.u_model, false, obj.getMatrix());
       gl.uniformMatrix4fv(attributes.u_view, false, player.getView());
-      gl.uniformMatrix4fv(attributes.u_projection, false, player.camera.getProjectionMatrix());
+      gl.uniformMatrix4fv(
+        attributes.u_projection,
+        false,
+        player.camera.getProjectionMatrix()
+      );
 
       // Draw
       gl.drawArrays(gl.TRIANGLES, offset, obj.data.length / size);

@@ -14,9 +14,8 @@ export default gl => {
     zNear,
     zFar,
     speed,
-    getProjectionMatrix: () => m4.perspective(fieldOfViewRadians, aspect, zNear, zFar),
-    getMatrix: () => {
-      
-    }
+    getProjectionMatrix: () =>
+      m4.perspective(fieldOfViewRadians, aspect, zNear, zFar),
+    getMatrix: () => {}
   };
 };

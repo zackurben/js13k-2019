@@ -21,7 +21,11 @@ const { createShader, createProgram } = ShaderUtils(gl);
 const { Basic, MultiColored } = Shaders(gl);
 const { Cube, Plane } = Primitive({ Basic });
 const camera = Camera(gl);
-const player = new Player(camera, {position: [0, 2, 10], rotation: [0,0,0]});
+const player = new Player(camera, {
+  position: [0, 2, 10],
+  rotation: [0, 0, 0],
+  canvas
+});
 const FPS = new StatCache();
 const DRAW = new StatCache();
 
@@ -57,8 +61,7 @@ let delta;
   // Render each of our objects
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
-    if (item.render)
-      item.render({ player });
+    if (item.render) item.render({ player });
   });
 
   if (fps) {
