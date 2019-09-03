@@ -1,10 +1,7 @@
 import m4 from './Matrix';
 import { degToRad } from './Util';
 
-export default (gl, {
-  translation = [0, 0, 0],
-  rotation = [0, 0, 0]
-} = {}) => {
+export default (gl, { translation = [0, 0, 0], rotation = [0, 0, 0] } = {}) => {
   let fieldOfViewRadians = degToRad(60);
   let aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
   let zNear = 1;

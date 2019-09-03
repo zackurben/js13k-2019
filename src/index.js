@@ -18,7 +18,7 @@ if (!gl) {
 
 const { Basic, MultiColored } = Shaders(gl);
 const { Cube, Plane } = Primitive({ Basic });
-const camera = Camera(gl, {translation: [0, 2, 4], rotation: [0, 1, 0]});
+const camera = Camera(gl, { translation: [0, 2, 4], rotation: [0, 0, 0] });
 const input = Input({ canvas });
 const player = Player({
   translation: [0, 0, 0],
@@ -54,31 +54,31 @@ let types = {
 };
 
 const primary = new Cube({
-  translation: [
-    0, 2, -6
-  ], color: [1, 1, 1],
+  translation: [0, 2, -6],
+  color: [1, 1, 1],
   update(delta) {
-    this.rotation = arrayAdd(this.rotation, [0, delta/1000, 0])
+    this.rotation = arrayAdd(this.rotation, [0, delta / 1000, 0]);
   }
 });
 const secondary = new Cube({
-  translation: [
-    0, 2, -8
-  ], color: [1, 1, 1],
-  scale: [0.5, 0.5, 0.5]
-})
+  translation: [0, 2, -8],
+  color: [0.9, 0.7, 0.3],
+  scale: [0.5, 0.5, 0.5],
+  update(delta) {
+    this.rotation = arrayAdd(this.rotation, [0, delta / 1000, 0]);
+  }
+});
 
-const objs = [].concat(Data.objs.map(obj => {
-  let { type, faces, color } = obj;
-  return new types[type]({
-    data: Triangulation(faces, Data.vertices).flat(),
-    color
-  });
-}),
-[
-  primary,
-  secondary
-]);
+const objs = [].concat(
+  // Data.objs.map(obj => {
+  //   let { type, faces, color } = obj;
+  //   return new types[type]({
+  //     data: Triangulation(faces, Data.vertices).flat(),
+  //     color
+  //   });
+  // }),
+  [primary, secondary]
+);
 
 // RENDER
 // Define the viewport dimensions.
