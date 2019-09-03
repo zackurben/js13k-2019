@@ -15,10 +15,6 @@ if (!gl) {
   console.error('no gl context');
 }
 
-const world = {
-  translation: [0, 0, 0],
-  rotation: [0, 0, 0]
-};
 const { Basic, MultiColored } = Shaders(gl);
 const { Cube, Plane } = Primitive({ Basic });
 const camera = Camera(gl);
@@ -37,11 +33,11 @@ camera.update = delta => {
 input.update = delta => {
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
-  world.translation = arrayAdd(world.translation, movement);
+  player.translation = arrayAdd(player.translation, movement);
 
   const _rspeed = input.viewSpeed * (delta / 1000);
   const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
-  world.rotation = arrayAdd(world.rotation, [x, y, z]);
+  player.rotation = arrayAdd(player.rotation, [x, y, z]);
 };
 player.addComponent(camera);
 player.addComponent(input);
@@ -81,7 +77,7 @@ let delta;
   // Render each of our objects
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
-    if (item.render) item.render({ camera, world });
+    if (item.render) item.render({ camera });
   });
 
   if (fps) {
@@ -94,8 +90,7 @@ let delta;
     player rotation: ${JSON.stringify(player.rotation.map(radToDisplayDeg))}
     camera translation: ${JSON.stringify(camera.translation)}
     camera rotation: ${JSON.stringify(camera.rotation.map(radToDisplayDeg))}
-    world translation: ${JSON.stringify(world.translation)}
-    world rotation: ${JSON.stringify(world.rotation.map(radToDisplayDeg))}`;
+    `;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);

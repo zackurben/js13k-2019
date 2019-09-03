@@ -30,20 +30,16 @@ export default ({ gl, Basic }) => {
       this.vbo_color = vbo_color;
     }
 
-    render({ world, camera }) {
-      this.shader.render(this, { camera, world });
+    render({ camera }) {
+      this.shader.render(this, { camera });
     }
 
-    getMatrix({world}) {
+    getMatrix() {
       let matrix = m4.identity();
       matrix = m4.xRotate(matrix, this.rotation[0]);
-      matrix = m4.xRotate(matrix, world.rotation[0]);
       matrix = m4.yRotate(matrix, this.rotation[1]);
-      matrix = m4.yRotate(matrix, world.rotation[1]);
       matrix = m4.zRotate(matrix, this.rotation[2]);
-      matrix = m4.zRotate(matrix, world.rotation[2]);
       matrix = m4.translate(matrix, ...this.translation);
-      matrix = m4.translate(matrix, ...world.translation);
       matrix = m4.scale(matrix, ...this.scale);
       return matrix;
     }

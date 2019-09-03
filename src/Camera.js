@@ -22,7 +22,7 @@ export default (gl, {
     getProjectionMatrix() {
       return m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
     },
-    getMatrix({world}) {
+    getMatrix() {
       let out = m4.xRotate(m4.identity(), this.rotation[0]);
       out = m4.yRotate(out, this.rotation[1]);
       out = m4.zRotate(out, this.rotation[2]);

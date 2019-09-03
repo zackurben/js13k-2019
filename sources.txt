@@ -6,3 +6,4 @@ https://webgl2fundamentals.org/
 https://keycode.info/
 https://learnopengl.com/Getting-started/Camera
 http://in2gpu.com/2016/02/26/opengl-fps-camera/
+http://www.mbsoftworks.sk/tutorials/opengl4/005-camera-pt1-simple-walking-camera/
