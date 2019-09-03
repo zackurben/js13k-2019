@@ -5,7 +5,7 @@ import Shaders from './shaders';
 import Camera from './Camera';
 import Data from '../data/data.json';
 import Triangulation from './Triangulator';
-import { arrayAdd } from './Util';
+import { arrayAdd, radToDisplayDeg } from './Util';
 import Input from './Input';
 
 const canvas = document.querySelector('canvas');
@@ -15,29 +15,33 @@ if (!gl) {
   console.error('no gl context');
 }
 
+const world = {
+  translation: [0, 0, 0],
+  rotation: [0, 0, 0]
+};
 const { Basic, MultiColored } = Shaders(gl);
 const { Cube, Plane } = Primitive({ Basic });
 const camera = Camera(gl);
 const input = Input({ canvas });
 const player = Player({
-  position: [0, 0, 0],
+  translation: [0, 0, 0],
   rotation: [0, 0, 0]
 });
 const cameraOffset = [0, 2, 0];
 
 // Add a camera script to follow the player.
 camera.update = delta => {
-  camera.position = arrayAdd(player.position, cameraOffset);
+  camera.translation = arrayAdd(player.translation, cameraOffset);
   camera.rotation = player.rotation;
 };
 input.update = delta => {
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
-  player.position = arrayAdd(player.position, movement);
+  world.translation = arrayAdd(world.translation, movement);
 
   const _rspeed = input.viewSpeed * (delta / 1000);
   const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
-  player.rotation = arrayAdd(player.rotation, [x, y, z]);
+  world.rotation = arrayAdd(world.rotation, [x, y, z]);
 };
 player.addComponent(camera);
 player.addComponent(input);
@@ -77,7 +81,7 @@ let delta;
   // Render each of our objects
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
-    if (item.render) item.render({ player, camera });
+    if (item.render) item.render({ camera, world });
   });
 
   if (fps) {
@@ -86,10 +90,12 @@ let delta;
 
     fps.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
-    player position: ${JSON.stringify(player.position)}
-    player rotation: ${JSON.stringify(player.rotation)}
-    camera position: ${JSON.stringify(camera.position)}
-    camera rotation: ${JSON.stringify(camera.rotation)}`;
+    player translation: ${JSON.stringify(player.translation)}
+    player rotation: ${JSON.stringify(player.rotation.map(radToDisplayDeg))}
+    camera translation: ${JSON.stringify(camera.translation)}
+    camera rotation: ${JSON.stringify(camera.rotation.map(radToDisplayDeg))}
+    world translation: ${JSON.stringify(world.translation)}
+    world rotation: ${JSON.stringify(world.rotation.map(radToDisplayDeg))}`;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);

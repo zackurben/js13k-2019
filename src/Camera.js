@@ -2,7 +2,7 @@ import m4 from './Matrix';
 import { degToRad } from './Util';
 
 export default (gl, {
-  position = [0, 0, 0],
+  translation = [0, 0, 0],
   rotation = [0, 0, 0]
 } = {}) => {
   let fieldOfViewRadians = degToRad(60);
@@ -17,16 +17,16 @@ export default (gl, {
     zNear,
     zFar,
     speed,
-    position,
+    translation,
     rotation,
     getProjectionMatrix() {
       return m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
     },
-    getMatrix() {
-      let out = m4.translate(m4.identity(), ...this.position);
-      out = m4.xRotate(out, this.rotation[0]);
+    getMatrix({world}) {
+      let out = m4.xRotate(m4.identity(), this.rotation[0]);
       out = m4.yRotate(out, this.rotation[1]);
       out = m4.zRotate(out, this.rotation[2]);
+      out = m4.translate(out, ...this.translation);
       return out;
     }
   };

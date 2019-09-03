@@ -37,7 +37,6 @@ export default ({
     if (paused) return;
 
     const { clientX, clientY, movementX, movementY, offsetX, offsetY } = e;
-    // console.log(clientX, clientY, movementX, movementY);
     rotation = [movementX, movementY, 0].map(i => parseFloat(i));
   });
 

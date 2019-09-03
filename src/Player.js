@@ -2,13 +2,13 @@
 
 export default ({
   speed = 5,
-  position = [0, 0, 0],
+  translation = [0, 0, 0],
   rotation = [0, 0, 0],
   scale = [1, 1, 1]
 } = {}) => {
   return {
     speed,
-    position,
+    translation,
     rotation,
     scale,
     components: [],

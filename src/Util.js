@@ -1,4 +1,4 @@
-export function arrayAdd(a, b) {
+export function arrayAdd(a = [], b = []) {
   let len = Math.max(a.length, b.length);
   let _a, _b;
   return new Array(len).fill(0).map((val, index) => {
@@ -14,4 +14,8 @@ export function radToDeg(r) {
 
 export function degToRad(d) {
   return (d * Math.PI) / 180;
+}
+
+export function radToDisplayDeg(r) {
+  return parseFloat(parseFloat(radToDeg(r) % 360).toFixed(0));
 }
