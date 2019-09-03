@@ -7,6 +7,7 @@ import Data from '../data/data.json';
 import Triangulation from './Triangulator';
 import { arrayAdd, radToDisplayDeg } from './Util';
 import Input from './Input';
+import m4 from './Matrix';
 
 const canvas = document.querySelector('canvas');
 const fps = document.querySelector('div');
@@ -17,27 +18,29 @@ if (!gl) {
 
 const { Basic, MultiColored } = Shaders(gl);
 const { Cube, Plane } = Primitive({ Basic });
-const camera = Camera(gl);
+const camera = Camera(gl, {translation: [0, 2, 4], rotation: [0, 1, 0]});
 const input = Input({ canvas });
 const player = Player({
   translation: [0, 0, 0],
   rotation: [0, 0, 0]
 });
-const cameraOffset = [0, 2, 0];
+const cameraOffset = [0, 2, 4];
 
 // Add a camera script to follow the player.
 camera.update = delta => {
-  camera.translation = arrayAdd(player.translation, cameraOffset);
-  camera.rotation = player.rotation;
+  // camera.translation = arrayAdd(player.translation, cameraOffset);
+  // camera.rotation = player.rotation;
 };
 input.update = delta => {
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
   player.translation = arrayAdd(player.translation, movement);
+  camera.translation = arrayAdd(camera.translation, movement);
 
-  const _rspeed = input.viewSpeed * (delta / 1000);
-  const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
-  player.rotation = arrayAdd(player.rotation, [x, y, z]);
+  // const _rspeed = input.viewSpeed * (delta / 1000);
+  // const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
+  // player.rotation = arrayAdd(player.rotation, [x, y, z]);
+  // camera.rotation = arrayAdd(camera.rotation, [x, y, z]);
 };
 player.addComponent(camera);
 player.addComponent(input);
@@ -50,13 +53,32 @@ let types = {
   Plane
 };
 
-const objs = Data.objs.map(obj => {
+const primary = new Cube({
+  translation: [
+    0, 2, -6
+  ], color: [1, 1, 1],
+  update(delta) {
+    this.rotation = arrayAdd(this.rotation, [0, delta/1000, 0])
+  }
+});
+const secondary = new Cube({
+  translation: [
+    0, 2, -8
+  ], color: [1, 1, 1],
+  scale: [0.5, 0.5, 0.5]
+})
+
+const objs = [].concat(Data.objs.map(obj => {
   let { type, faces, color } = obj;
   return new types[type]({
     data: Triangulation(faces, Data.vertices).flat(),
     color
   });
-});
+}),
+[
+  primary,
+  secondary
+]);
 
 // RENDER
 // Define the viewport dimensions.
@@ -90,6 +112,8 @@ let delta;
     player rotation: ${JSON.stringify(player.rotation.map(radToDisplayDeg))}
     camera translation: ${JSON.stringify(camera.translation)}
     camera rotation: ${JSON.stringify(camera.rotation.map(radToDisplayDeg))}
+    primary translation: ${JSON.stringify(primary.translation)}
+    primary rotation: ${JSON.stringify(primary.rotation.map(radToDisplayDeg))}
     `;
   }
   lastRender = timestamp;

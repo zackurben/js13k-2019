@@ -23,11 +23,12 @@ export default (gl, {
       return m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
     },
     getMatrix() {
-      let out = m4.xRotate(m4.identity(), this.rotation[0]);
-      out = m4.yRotate(out, this.rotation[1]);
-      out = m4.zRotate(out, this.rotation[2]);
-      out = m4.translate(out, ...this.translation);
-      return out;
+      let matrix = m4.identity();
+      matrix = m4.xRotate(matrix, this.rotation[0]);
+      matrix = m4.yRotate(matrix, this.rotation[1]);
+      matrix = m4.zRotate(matrix, this.rotation[2]);
+      matrix = m4.translate(matrix, ...this.translation);
+      return matrix;
     }
   };
 };
