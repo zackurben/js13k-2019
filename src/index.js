@@ -69,7 +69,7 @@ const secondary = new Cube({
   }
 });
 const axis = new Axis({
-  scale: [20, 20, 20]
+  scale: [10, 10, 10]
 });
 
 const objs = [].concat(
@@ -117,9 +117,6 @@ let delta;
     camera rotation: ${JSON.stringify(camera.rotation.map(radToDisplayDeg))}
     primary translation: ${JSON.stringify(primary.translation)}
     primary rotation: ${JSON.stringify(primary.rotation.map(radToDisplayDeg))}
-    axis translation: ${JSON.stringify(axis.translation)}
-    axis rotation: ${JSON.stringify(axis.rotation.map(radToDisplayDeg))}
-    axis scale: ${JSON.stringify(axis.scale)}
     `;
   }
   lastRender = timestamp;
