@@ -35,13 +35,12 @@ export default ({ gl, Basic, Line }) => {
     }
 
     getMatrix() {
-      let matrix = m4.identity();
+      let matrix = m4.translation(...this.translation);
       matrix = m4.scale(matrix, ...this.scale);
-      matrix = m4.translate(matrix, ...this.translation);
       matrix = m4.xRotate(matrix, this.rotation[0]);
       matrix = m4.yRotate(matrix, this.rotation[1]);
       matrix = m4.zRotate(matrix, this.rotation[2]);
-
+      this.mat = matrix;
       return matrix;
     }
   }

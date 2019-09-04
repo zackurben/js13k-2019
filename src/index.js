@@ -37,10 +37,10 @@ input.update = delta => {
   player.translation = arrayAdd(player.translation, movement);
   camera.translation = arrayAdd(camera.translation, movement);
 
-  const _rspeed = input.viewSpeed * (delta / 1000);
-  const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
-  player.rotation = arrayAdd(player.rotation, [x, y, z]);
-  camera.rotation = arrayAdd(camera.rotation, [x, y, z]);
+  // const _rspeed = input.viewSpeed * (delta / 1000);
+  // const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
+  // player.rotation = arrayAdd(player.rotation, [x, y, z]);
+  // camera.rotation = arrayAdd(camera.rotation, [x, y, z]);
 };
 player.addComponent(camera);
 player.addComponent(input);
@@ -117,6 +117,7 @@ let delta;
     camera rotation: ${JSON.stringify(camera.rotation.map(radToDisplayDeg))}
     primary translation: ${JSON.stringify(primary.translation)}
     primary rotation: ${JSON.stringify(primary.rotation.map(radToDisplayDeg))}
+    primary mat: ${JSON.stringify(primary.mat.map(i => parseFloat(i).toFixed(1)))}
     `;
   }
   lastRender = timestamp;

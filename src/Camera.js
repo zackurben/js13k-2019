@@ -20,11 +20,10 @@ export default (gl, { translation = [0, 0, 0], rotation = [0, 0, 0] } = {}) => {
       return m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
     },
     getMatrix() {
-      let matrix = m4.identity();
+      let matrix = m4.translation(...this.translation)
       matrix = m4.xRotate(matrix, this.rotation[0]);
       matrix = m4.yRotate(matrix, this.rotation[1]);
       matrix = m4.zRotate(matrix, this.rotation[2]);
-      matrix = m4.translate(matrix, ...this.translation);
       return matrix;
     }
   };
