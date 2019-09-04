@@ -16,8 +16,8 @@ if (!gl) {
   console.error('no gl context');
 }
 
-const { Basic, MultiColored } = Shaders(gl);
-const { Cube, Plane } = Primitive({ Basic });
+const { Basic, MultiColored, Line } = Shaders(gl);
+const { Cube, Plane, Axis } = Primitive({ Basic, Line });
 const camera = Camera(gl, { translation: [0, 2, 4], rotation: [0, 0, 0] });
 const input = Input({ canvas });
 const player = Player({
@@ -37,10 +37,10 @@ input.update = delta => {
   player.translation = arrayAdd(player.translation, movement);
   camera.translation = arrayAdd(camera.translation, movement);
 
-  // const _rspeed = input.viewSpeed * (delta / 1000);
-  // const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
-  // player.rotation = arrayAdd(player.rotation, [x, y, z]);
-  // camera.rotation = arrayAdd(camera.rotation, [x, y, z]);
+  const _rspeed = input.viewSpeed * (delta / 1000);
+  const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
+  player.rotation = arrayAdd(player.rotation, [x, y, z]);
+  camera.rotation = arrayAdd(camera.rotation, [x, y, z]);
 };
 player.addComponent(camera);
 player.addComponent(input);
@@ -68,6 +68,9 @@ const secondary = new Cube({
     this.rotation = arrayAdd(this.rotation, [0, delta / 1000, 0]);
   }
 });
+const axis = new Axis({
+  scale: [20, 20, 20]
+});
 
 const objs = [].concat(
   // Data.objs.map(obj => {
@@ -77,7 +80,7 @@ const objs = [].concat(
   //     color
   //   });
   // }),
-  [primary, secondary]
+  [primary, secondary, axis]
 );
 
 // RENDER
@@ -114,6 +117,9 @@ let delta;
     camera rotation: ${JSON.stringify(camera.rotation.map(radToDisplayDeg))}
     primary translation: ${JSON.stringify(primary.translation)}
     primary rotation: ${JSON.stringify(primary.rotation.map(radToDisplayDeg))}
+    axis translation: ${JSON.stringify(axis.translation)}
+    axis rotation: ${JSON.stringify(axis.rotation.map(radToDisplayDeg))}
+    axis scale: ${JSON.stringify(axis.scale)}
     `;
   }
   lastRender = timestamp;

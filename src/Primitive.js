@@ -1,6 +1,6 @@
 import m4 from './Matrix';
 
-export default ({ gl, Basic }) => {
+export default ({ gl, Basic, Line }) => {
   class Primitive {
     constructor({
       translation = [0, 0, 0],
@@ -36,8 +36,8 @@ export default ({ gl, Basic }) => {
 
     getMatrix() {
       let matrix = m4.identity();
-      // matrix = m4.scale(matrix, ...this.scale);
-      // matrix = m4.translate(matrix, ...this.translation);
+      matrix = m4.scale(matrix, ...this.scale);
+      matrix = m4.translate(matrix, ...this.translation);
       matrix = m4.xRotate(matrix, this.rotation[0]);
       matrix = m4.yRotate(matrix, this.rotation[1]);
       matrix = m4.zRotate(matrix, this.rotation[2]);
@@ -214,9 +214,46 @@ export default ({ gl, Basic }) => {
     }
   }
 
+  class Axis extends Primitive {
+    constructor(args) {
+      super({
+        data: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        color: [
+          1,
+          0,
+          0,
+          1,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          1,
+          0,
+          0,
+          1,
+          1,
+          0,
+          1,
+          0,
+          1,
+          0,
+          1,
+          0,
+          1
+        ],
+        shader: Line,
+        ...args
+      });
+    }
+  }
+
   return {
     Primitive,
     Cube,
-    Plane
+    Plane,
+    Axis
   };
 };
