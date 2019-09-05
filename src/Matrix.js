@@ -342,5 +342,17 @@ export default {
 
   scale: function(m, sx, sy, sz) {
     return this.multiply(m, this.scaling(sx, sy, sz));
+  },
+
+  getScale(mat) {
+    return [mat[0], mat[5], mat[10]];
+  },
+
+  getRotation(mat) {
+
+  },
+
+  getTranslation(mat) {
+    return [mat[12], mat[13], mat[14]];
   }
 };

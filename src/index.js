@@ -5,7 +5,7 @@ import Shaders from './shaders';
 import Camera from './Camera';
 import Data from '../data/data.json';
 import Triangulation from './Triangulator';
-import { radToDisplayDeg } from './Util';
+import { radToDisplayDeg, displayMat } from './Util';
 import Input from './Input';
 import m4 from './Matrix';
 
@@ -38,18 +38,24 @@ const player = new Player({
 //   // camera.setMatrix();
 // };
 input.update = delta => {
-  const _speed = player.speed * (delta / 1000);
-  const movement = input.getMovement().map(i => i * _speed);
-  player.translation = m4.addVectors(player.translation, movement);
-  // camera.translation = m4.addVectors(camera.translation, movement);
-
   const _rspeed = input.viewSpeed * (delta / 1000);
   const [x, y, z] = input.getRotation().map(i => (i *= _rspeed));
-  player.rotation = m4.addVectors(player.rotation, [x, y, z]);
-  // camera.rotation = m4.addVectors(camera.rotation, [x, y, z]);
+  let rotation = m4.identity();
+  rotation = m4.multiply(rotation, m4.xRotation(x))
+  rotation = m4.multiply(rotation, m4.yRotation(y))
+  rotation = m4.multiply(rotation, m4.zRotation(z))
+  // player.rotation = m4.addVectors(player.rotation, [x, y, z])
 
-  player.setMatrix();
-  // camera.setMatrix();
+  const _speed = player.speed * (delta / 1000);
+  const movement = input.getMovement().map(i => i * _speed);
+  let translation = m4.translation(...movement);
+  let out = m4.multiply(rotation, translation);
+  // player.translation = m4.addVectors(player.translation, m4.getTranslation(out));
+
+  player.localMatrix = m4.multiply(player.localMatrix, out);
+
+
+  // player.setMatrix();
 };
 player.addComponent(camera);
 player.addComponent(input);
@@ -136,6 +142,10 @@ let delta;
     camera rotation: ${camera.rotation.map(radToDisplayDeg)}
     primary translation: ${primary.translation}
     primary rotation: ${primary.rotation.map(radToDisplayDeg)}
+    player loc: ${m4.getTranslation(player.worldMatrix)}
+    player world: ${displayMat(player.worldMatrix)}
+    
+    camera world: ${displayMat(camera.worldMatrix)}
     `;
   }
   lastRender = timestamp;
