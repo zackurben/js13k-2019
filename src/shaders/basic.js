@@ -94,7 +94,7 @@ export default gl => {
 
       // Set geometry attributes.
       gl.uniform4f(attributes.u_color, ...obj.color);
-      gl.uniformMatrix4fv(attributes.u_model, false, obj.getMatrix());
+      gl.uniformMatrix4fv(attributes.u_model, false, obj.worldMatrix);
       gl.uniformMatrix4fv(attributes.u_view, false, camera.getMatrix());
       gl.uniformMatrix4fv(
         attributes.u_projection,

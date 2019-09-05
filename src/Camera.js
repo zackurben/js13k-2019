@@ -1,5 +1,6 @@
 import m4 from './Matrix';
 import { degToRad } from './Util';
+import Node from './Primitive';
 
 export default (gl, { translation = [0, 0, 0], rotation = [0, 0, 0] } = {}) => {
   let fieldOfViewRadians = degToRad(60);
@@ -20,7 +21,7 @@ export default (gl, { translation = [0, 0, 0], rotation = [0, 0, 0] } = {}) => {
       return m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
     },
     getMatrix() {
-      let matrix = m4.translation(...this.translation)
+      let matrix = m4.translation(...this.translation);
       matrix = m4.xRotate(matrix, this.rotation[0]);
       matrix = m4.yRotate(matrix, this.rotation[1]);
       matrix = m4.zRotate(matrix, this.rotation[2]);

@@ -118,7 +118,7 @@ export default gl => {
       // Use our pre configured VAO
       gl.bindVertexArray(obj.vao);
 
-      gl.uniformMatrix4fv(attributes.u_model, false, obj.getMatrix());
+      gl.uniformMatrix4fv(attributes.u_model, false, obj.worldMatrix);
       gl.uniformMatrix4fv(attributes.u_view, false, camera.getMatrix());
       gl.uniformMatrix4fv(
         attributes.u_projection,

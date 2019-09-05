@@ -1,7 +1,52 @@
 import m4 from './Matrix';
 
+export class Node {
+  constructor({ parent } = {}) {
+    this.localMatrix = m4.identity();
+    this.worldMatrix = m4.identity();
+    this.components = [];
+
+    if (parent) {
+      this.setParent(parent);
+    }
+  }
+
+  setParent(p) {
+    // remove and clean up old parent
+    if (this.parent) {
+      this.parent.removeComponent(this);
+    }
+
+    this.parent = p;
+    this.parent.addComponent(this);
+  }
+
+  removeComponent(c) {
+    if (this.components) {
+      let loc = this.components.indexOf(c);
+      if (loc !== -1) {
+        this.components.splice(loc, 1);
+      }
+    }
+  }
+
+  addComponent(c) {
+    this.components.push(c);
+  }
+
+  updateWorldMatrix(parentWorldMatrix) {
+    if (parentWorldMatrix) {
+      this.worldMatrix = m4.multiply(parentWorldMatrix, this.localMatrix);
+    } else {
+      this.worldMatrix = this.localMatrix.slice(0);
+    }
+
+    this.components.forEach(c => c.updateWorldMatrix(this.worldMatrix));
+  }
+}
+
 export default ({ gl, Basic, Line }) => {
-  class Primitive {
+  class Primitive extends Node {
     constructor({
       translation = [0, 0, 0],
       rotation = [0, 0, 0],
@@ -9,8 +54,11 @@ export default ({ gl, Basic, Line }) => {
       data = [],
       color = [Math.random(), Math.random(), Math.random(), 1],
       update = () => {},
-      shader = Basic
+      shader = Basic,
+      parent
     } = {}) {
+      super({ parent });
+
       this.translation = translation;
       this.rotation = rotation;
       this.scale = scale;
@@ -28,20 +76,20 @@ export default ({ gl, Basic, Line }) => {
       this.vao = vao;
       this.vbo = vbo;
       this.vbo_color = vbo_color;
+
+      this.setMatrix();
     }
 
     render({ camera }) {
       this.shader.render(this, { camera });
     }
 
-    getMatrix() {
-      let matrix = m4.translation(...this.translation);
-      matrix = m4.scale(matrix, ...this.scale);
-      matrix = m4.xRotate(matrix, this.rotation[0]);
-      matrix = m4.yRotate(matrix, this.rotation[1]);
-      matrix = m4.zRotate(matrix, this.rotation[2]);
-      this.mat = matrix;
-      return matrix;
+    setMatrix() {
+      this.localMatrix = m4.translation(...this.translation);
+      this.localMatrix = m4.scale(this.localMatrix, ...this.scale);
+      this.localMatrix = m4.xRotate(this.localMatrix, this.rotation[0]);
+      this.localMatrix = m4.yRotate(this.localMatrix, this.rotation[1]);
+      this.localMatrix = m4.zRotate(this.localMatrix, this.rotation[2]);
     }
   }
 
@@ -52,127 +100,127 @@ export default ({ gl, Basic, Line }) => {
           // front
           -0.5,
           -0.5,
-          0,
+          0.5,
 
           0.5,
           0.5,
-          0,
-
-          -0.5,
           0.5,
-          0,
 
           -0.5,
+          0.5,
+          0.5,
+
           -0.5,
-          0,
+          -0.5,
+          0.5,
 
           0.5,
           -0.5,
-          0,
+          0.5,
 
           0.5,
           0.5,
-          0,
+          0.5,
 
           // back
           0.5,
           -0.5,
-          -1,
-          -0.5,
-          0.5,
-          -1,
-          0.5,
-          0.5,
-          -1,
-          0.5,
-          -0.5,
-          -1,
           -0.5,
           -0.5,
-          -1,
+          0.5,
           -0.5,
           0.5,
-          -1,
+          0.5,
+          -0.5,
+          0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          0.5,
+          -0.5,
 
           // top
           -0.5,
           0.5,
-          0,
           0.5,
           0.5,
-          -1,
+          0.5,
+          -0.5,
           -0.5,
           0.5,
-          -1,
+          -0.5,
           -0.5,
           0.5,
-          0,
           0.5,
           0.5,
-          0,
           0.5,
           0.5,
-          -1,
+          0.5,
+          0.5,
+          -0.5,
 
           // bottom
           -0.5,
           -0.5,
-          -1,
+          -0.5,
           0.5,
           -0.5,
-          0,
-          -0.5,
-          -0.5,
-          0,
-          -0.5,
-          -0.5,
-          -1,
           0.5,
           -0.5,
-          -1,
+          -0.5,
           0.5,
           -0.5,
-          0,
+          -0.5,
+          -0.5,
+          0.5,
+          -0.5,
+          -0.5,
+          0.5,
+          -0.5,
+          0.5,
 
           // left
           -0.5,
           -0.5,
-          -1,
+          -0.5,
           -0.5,
           0.5,
-          0,
+          0.5,
           -0.5,
           0.5,
-          -1,
           -0.5,
           -0.5,
-          -1,
           -0.5,
           -0.5,
-          0,
+          -0.5,
           -0.5,
           0.5,
-          0,
+          -0.5,
+          0.5,
+          0.5,
 
           // right
           0.5,
           -0.5,
-          0,
           0.5,
           0.5,
-          -1,
-          0.5,
-          0.5,
-          0,
           0.5,
           -0.5,
-          0,
+          0.5,
+          0.5,
+          0.5,
           0.5,
           -0.5,
-          -1,
           0.5,
           0.5,
-          -1
+          -0.5,
+          -0.5,
+          0.5,
+          0.5,
+          -0.5
         ],
         ...args
       });
@@ -313,6 +361,7 @@ export default ({ gl, Basic, Line }) => {
   }
 
   return {
+    Node,
     Primitive,
     Cube,
     Plane,

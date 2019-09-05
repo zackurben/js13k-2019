@@ -17,7 +17,8 @@ if (!gl) {
 }
 
 const { Basic, MultiColored, Line } = Shaders(gl);
-const { Cube, Plane, Axis } = Primitive({ Basic, Line });
+const { Node, Cube, Plane, Axis } = Primitive({ Basic, Line });
+const world = new Node();
 const camera = Camera(gl, { translation: [0, 2, 4], rotation: [0, 0, 0] });
 const input = Input({ canvas });
 const player = Player({
@@ -37,10 +38,10 @@ input.update = delta => {
   player.translation = arrayAdd(player.translation, movement);
   camera.translation = arrayAdd(camera.translation, movement);
 
-  // const _rspeed = input.viewSpeed * (delta / 1000);
-  // const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
-  // player.rotation = arrayAdd(player.rotation, [x, y, z]);
-  // camera.rotation = arrayAdd(camera.rotation, [x, y, z]);
+  const _rspeed = input.viewSpeed * (delta / 1000);
+  const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
+  player.rotation = arrayAdd(player.rotation, [x, y, z]);
+  camera.rotation = arrayAdd(camera.rotation, [x, y, z]);
 };
 player.addComponent(camera);
 player.addComponent(input);
@@ -54,33 +55,41 @@ let types = {
 };
 
 const primary = new Cube({
-  translation: [0, 2, -6],
+  translation: [0, 0, 0],
   color: [1, 1, 1],
   update(delta) {
-    this.rotation = arrayAdd(this.rotation, [0, delta / 1000, 0]);
+    this.localMatrix = m4.multiply(this.localMatrix, m4.yRotation(delta/1000))
   }
 });
 const secondary = new Cube({
-  translation: [0, 2, -8],
+  translation: [1, 1, -1],
   color: [0.9, 0.7, 0.3],
   scale: [0.5, 0.5, 0.5],
   update(delta) {
-    this.rotation = arrayAdd(this.rotation, [0, delta / 1000, 0]);
+    this.localMatrix = m4.multiply(this.localMatrix, m4.yRotation(delta / 100))
   }
 });
 const axis = new Axis({
   scale: [10, 10, 10]
 });
 
+world.addComponent(axis);
+world.addComponent(primary);
+primary.addComponent(secondary);
+
 const objs = [].concat(
-  // Data.objs.map(obj => {
-  //   let { type, faces, color } = obj;
-  //   return new types[type]({
-  //     data: Triangulation(faces, Data.vertices).flat(),
-  //     color
-  //   });
-  // }),
-  [primary, secondary, axis]
+  Data.objs.map(obj => {
+    let { type, faces, color } = obj;
+    return new types[type]({
+      data: Triangulation(faces, Data.vertices).flat(),
+      color
+    });
+  }),
+  [
+    primary,
+    secondary,
+    axis
+  ]
 );
 
 // RENDER
@@ -93,6 +102,7 @@ let lastRender = 0;
 let delta;
 (function render(timestamp = 0) {
   delta = timestamp - lastRender;
+  world.updateWorldMatrix();
   player.update(delta);
 
   // Clear the canvas
@@ -117,7 +127,6 @@ let delta;
     camera rotation: ${JSON.stringify(camera.rotation.map(radToDisplayDeg))}
     primary translation: ${JSON.stringify(primary.translation)}
     primary rotation: ${JSON.stringify(primary.rotation.map(radToDisplayDeg))}
-    primary mat: ${JSON.stringify(primary.mat.map(i => parseFloat(i).toFixed(1)))}
     `;
   }
   lastRender = timestamp;
