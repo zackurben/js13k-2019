@@ -119,7 +119,7 @@ export default gl => {
       gl.bindVertexArray(obj.vao);
 
       gl.uniformMatrix4fv(attributes.u_model, false, obj.worldMatrix);
-      gl.uniformMatrix4fv(attributes.u_view, false, camera.getMatrix());
+      gl.uniformMatrix4fv(attributes.u_view, false, camera.worldMatrix);
       gl.uniformMatrix4fv(
         attributes.u_projection,
         false,

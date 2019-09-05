@@ -24,21 +24,21 @@ export default ({
     keys[e.code] = false;
   });
 
-  document.addEventListener('click', e => {
-    if (paused) {
-      paused = false;
-      canvas.requestPointerLock();
-      console.log('running');
-    }
-  });
+  // document.addEventListener('click', e => {
+  //   if (paused) {
+  //     paused = false;
+  //     canvas.requestPointerLock();
+  //     console.log('running');
+  //   }
+  // });
 
-  document.addEventListener('mousemove', e => {
-    if (!e.isTrusted) return;
-    if (paused) return;
+  // document.addEventListener('mousemove', e => {
+  //   if (!e.isTrusted) return;
+  //   if (paused) return;
 
-    const { clientX, clientY, movementX, movementY, offsetX, offsetY } = e;
-    rotation = [movementX, movementY, 0].map(i => parseFloat(i));
-  });
+  //   const { clientX, clientY, movementX, movementY, offsetX, offsetY } = e;
+  //   rotation = [movementX, movementY, 0].map(i => parseFloat(i));
+  // });
 
   return {
     right,
@@ -62,12 +62,12 @@ export default ({
       let x = 0;
       let y = 0;
       let z = 0;
-      if (keys[right]) {
-        x = 1;
-      }
-      if (keys[left]) {
-        x = -1;
-      }
+      // if (keys[right]) {
+      //   x = 1;
+      // }
+      // if (keys[left]) {
+      //   x = -1;
+      // }
       if (keys[forward]) {
         z = -1;
       }
@@ -91,15 +91,30 @@ export default ({
     },
 
     getRotation() {
-      if (!rotation) {
-        return [0, 0, 0];
+      let x = 0;
+      let y = 0;
+      let z = 0;
+
+      if (keys[right]) {
+        y = -1;
+      }
+      if (keys[left]) {
+        y = 1;
       }
 
-      // Return the latest change and reset the rotation.
-      const cache = rotation;
-      rotation = [0, 0, 0];
+      return [x, y, z]
 
-      return cache.map(item => (invertedView ? -item : item));
-    }
+      // if (!rotation) {
+      //   return [0, 0, 0];
+      // }
+
+      // // Return the latest change and reset the rotation.
+      // const cache = rotation;
+      // rotation = [0, 0, 0];
+
+      // return cache.map(item => (invertedView ? -item : item));
+    },
+
+    updateWorldMatrix() {}
   };
 };

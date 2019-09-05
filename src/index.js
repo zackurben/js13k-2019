@@ -5,7 +5,7 @@ import Shaders from './shaders';
 import Camera from './Camera';
 import Data from '../data/data.json';
 import Triangulation from './Triangulator';
-import { arrayAdd, radToDisplayDeg } from './Util';
+import { radToDisplayDeg } from './Util';
 import Input from './Input';
 import m4 from './Matrix';
 
@@ -19,29 +19,37 @@ if (!gl) {
 const { Basic, MultiColored, Line } = Shaders(gl);
 const { Node, Cube, Plane, Axis } = Primitive({ Basic, Line });
 const world = new Node();
-const camera = Camera(gl, { translation: [0, 2, 4], rotation: [0, 0, 0] });
+const camera = new Camera({
+  translation: [0, 2, 4],
+  rotation: [0, 0, 0],
+  aspect: gl.canvas.clientWidth / gl.canvas.clientHeight
+});
 const input = Input({ canvas });
-const player = Player({
+const player = new Player({
   translation: [0, 0, 0],
   rotation: [0, 0, 0]
 });
-const cameraOffset = [0, 2, 4];
+// const cameraOffset = [0, 2, 4];
 
 // Add a camera script to follow the player.
-camera.update = delta => {
-  // camera.translation = arrayAdd(player.translation, cameraOffset);
-  // camera.rotation = player.rotation;
-};
+// camera.update = delta => {
+//   // camera.translation = m4.addVectors(player.translation, cameraOffset);
+//   // camera.rotation = player.rotation;
+//   // camera.setMatrix();
+// };
 input.update = delta => {
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
-  player.translation = arrayAdd(player.translation, movement);
-  camera.translation = arrayAdd(camera.translation, movement);
+  player.translation = m4.addVectors(player.translation, movement);
+  // camera.translation = m4.addVectors(camera.translation, movement);
 
   const _rspeed = input.viewSpeed * (delta / 1000);
-  const [y, x, z] = input.getRotation().map(i => (i *= _rspeed));
-  player.rotation = arrayAdd(player.rotation, [x, y, z]);
-  camera.rotation = arrayAdd(camera.rotation, [x, y, z]);
+  const [x, y, z] = input.getRotation().map(i => (i *= _rspeed));
+  player.rotation = m4.addVectors(player.rotation, [x, y, z]);
+  // camera.rotation = m4.addVectors(camera.rotation, [x, y, z]);
+
+  player.setMatrix();
+  // camera.setMatrix();
 };
 player.addComponent(camera);
 player.addComponent(input);
@@ -58,7 +66,10 @@ const primary = new Cube({
   translation: [0, 0, 0],
   color: [1, 1, 1],
   update(delta) {
-    this.localMatrix = m4.multiply(this.localMatrix, m4.yRotation(delta/1000))
+    this.localMatrix = m4.multiply(
+      this.localMatrix,
+      m4.yRotation(delta / 1000)
+    );
   }
 });
 const secondary = new Cube({
@@ -66,7 +77,7 @@ const secondary = new Cube({
   color: [0.9, 0.7, 0.3],
   scale: [0.5, 0.5, 0.5],
   update(delta) {
-    this.localMatrix = m4.multiply(this.localMatrix, m4.yRotation(delta / 100))
+    this.localMatrix = m4.multiply(this.localMatrix, m4.yRotation(delta / 100));
   }
 });
 const axis = new Axis({
@@ -76,6 +87,7 @@ const axis = new Axis({
 world.addComponent(axis);
 world.addComponent(primary);
 primary.addComponent(secondary);
+world.addComponent(player);
 
 const objs = [].concat(
   Data.objs.map(obj => {
@@ -85,11 +97,7 @@ const objs = [].concat(
       color
     });
   }),
-  [
-    primary,
-    secondary,
-    axis
-  ]
+  [primary, secondary, axis]
 );
 
 // RENDER
@@ -112,6 +120,7 @@ let delta;
   // Render each of our objects
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
+    if (item.setMatrix) item.setMatrix()
     if (item.render) item.render({ camera });
   });
 
@@ -121,12 +130,12 @@ let delta;
 
     fps.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
-    player translation: ${JSON.stringify(player.translation)}
-    player rotation: ${JSON.stringify(player.rotation.map(radToDisplayDeg))}
-    camera translation: ${JSON.stringify(camera.translation)}
-    camera rotation: ${JSON.stringify(camera.rotation.map(radToDisplayDeg))}
-    primary translation: ${JSON.stringify(primary.translation)}
-    primary rotation: ${JSON.stringify(primary.rotation.map(radToDisplayDeg))}
+    player translation: ${player.translation}
+    player rotation: ${player.rotation.map(radToDisplayDeg)}
+    camera translation: ${camera.translation}
+    camera rotation: ${camera.rotation.map(radToDisplayDeg)}
+    primary translation: ${primary.translation}
+    primary rotation: ${primary.rotation.map(radToDisplayDeg)}
     `;
   }
   lastRender = timestamp;

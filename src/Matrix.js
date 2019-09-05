@@ -160,6 +160,67 @@ export default {
     ];
   },
 
+  addVectors(a, b) {
+    let out = new Float32Array(3);
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    out[2] = a[2] + b[2];
+    return out;
+  },
+
+  subtractVectors(a, b) {
+    let out = new Float32Array(3);
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    out[2] = a[2] - b[2];
+    return out;
+  },
+
+  lookAt(cameraPosition, target, up) {
+    let out = new Float32Array(16);
+    let zAxis = this.normalize(this.subtractVectors(cameraPosition, target));
+    let xAxis = this.normalize(this.cross(up, zAxis));
+    let yAxis = this.normalize(this.cross(zAxis, xAxis));
+
+    out[0] = xAxis[0];
+    out[1] = xAxis[1];
+    out[2] = xAxis[2];
+    out[3] = 0;
+    out[4] = yAxis[0];
+    out[5] = yAxis[1];
+    out[6] = yAxis[2];
+    out[7] = 0;
+    out[8] = zAxis[0];
+    out[9] = zAxis[1];
+    out[10] = zAxis[2];
+    out[11] = 0;
+    out[12] = cameraPosition[0];
+    out[13] = cameraPosition[1];
+    out[14] = cameraPosition[2];
+    out[15] = 1;
+    return out;
+  },
+
+  normalize(v) {
+    let out = new Float32Array(3);
+    var length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    // make sure we don't divide by 0.
+    if (length > 0.00001) {
+      out[0] = v[0] / length;
+      out[1] = v[1] / length;
+      out[2] = v[2] / length;
+    }
+    return out;
+  },
+
+  cross(a, b) {
+    let out = new Float32Array(3);
+    out[0] = a[1] * b[2] - a[2] * b[1];
+    out[1] = a[2] * b[0] - a[0] * b[2];
+    out[2] = a[0] * b[1] - a[1] * b[0];
+    return out;
+  },
+
   multiply: function(a, b) {
     var a00 = a[0 * 4 + 0];
     var a01 = a[0 * 4 + 1];
