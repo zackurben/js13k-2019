@@ -6,14 +6,16 @@ export default (faces, vertices, normal) => {
 
   faces.map((face, i) => {
     const [a, b, c, d] = face;
-    data.push([
-      vertices[a],
-      vertices[b],
-      vertices[c],
-      vertices[a],
-      vertices[c],
-      vertices[d]
-    ].flat());
+    data.push(
+      [
+        vertices[a],
+        vertices[b],
+        vertices[c],
+        vertices[a],
+        vertices[c],
+        vertices[d]
+      ].flat()
+    );
 
     // Give each vertex in this face the same normals.
     normals.push(
@@ -23,14 +25,16 @@ export default (faces, vertices, normal) => {
       normal[i],
       normal[i],
       normal[i]
-    )
+    );
   });
 
-  data = data.flat()
-  normals = normals.flat()
+  data = data.flat();
+  normals = normals.flat();
+
+  console.log(JSON.stringify(normals));
 
   return {
     data,
     normals
-  }
+  };
 };

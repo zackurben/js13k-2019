@@ -68,6 +68,7 @@ let types = {
 const primary = new Cube({
   translation: [0, 0, 0],
   color: [1, 1, 1],
+  shader: Lighted,
   update(delta) {
     this.rotation = m4.addVectors(this.rotation, [0, delta / 1000, 0]);
   }
@@ -76,6 +77,7 @@ const secondary = new Cube({
   translation: [1, 1, -1],
   color: [0.9, 0.7, 0.3],
   scale: [0.5, 0.5, 0.5],
+  shader: Lighted,
   update(delta) {
     this.rotation = m4.addVectors(this.rotation, [0, delta / 100, 0]);
   }
@@ -92,7 +94,7 @@ world.addComponent(player);
 const objs = [].concat(
   Data.objs.map(obj => {
     let { type, faces, color, normals: normal } = obj;
-    const {data, normals} = Triangulation(faces, Data.vertices, normal);
+    const { data, normals } = Triangulation(faces, Data.vertices, normal);
     return new types[type]({
       data,
       normals,

@@ -83,14 +83,15 @@ data
     }
 
     if (ln.startsWith('vn')) {
-      const normal = ln.split('vn ')
+      const normal = ln
+        .split('vn ')
         .pop()
         .toString()
         .toString()
         .split(' ')
-        .map(parseFloat)
+        .map(parseFloat);
 
-        current.normals.push(normal);
+      current.normals.push(normal);
     }
   });
 
