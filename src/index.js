@@ -44,18 +44,20 @@ input.update = delta => {
   rotation = m4.multiply(rotation, m4.xRotation(x))
   rotation = m4.multiply(rotation, m4.yRotation(y))
   rotation = m4.multiply(rotation, m4.zRotation(z))
-  // player.rotation = m4.addVectors(player.rotation, [x, y, z])
 
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
   let translation = m4.translation(...movement);
   let out = m4.multiply(rotation, translation);
-  // player.translation = m4.addVectors(player.translation, m4.getTranslation(out));
 
+  // Get the players new location.
   player.localMatrix = m4.multiply(player.localMatrix, out);
 
-
-  // player.setMatrix();
+  // Update the rotation and translation, so we can reset the matrix without
+  // losing positional data.
+  player.rotation = m4.addVectors(player.rotation, [x, y, z])
+  player.translation = m4.getTranslation(player.localMatrix);
+  player.setMatrix();
 };
 player.addComponent(camera);
 player.addComponent(input);
