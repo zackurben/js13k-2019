@@ -1,17 +1,36 @@
 'use strict';
 
-export default (faces, vertices) => {
-  return faces.map(face => {
+export default (faces, vertices, normal) => {
+  let data = [];
+  let normals = [];
+
+  faces.map((face, i) => {
     const [a, b, c, d] = face;
-    return [
+    data.push([
       vertices[a],
       vertices[b],
       vertices[c],
       vertices[a],
       vertices[c],
       vertices[d]
-    ]
-      .map(([x, y, z]) => [x, y, z])
-      .flat();
+    ].flat());
+
+    // Give each vertex in this face the same normals.
+    normals.push(
+      normal[i],
+      normal[i],
+      normal[i],
+      normal[i],
+      normal[i],
+      normal[i]
+    )
   });
+
+  data = data.flat()
+  normals = normals.flat()
+
+  return {
+    data,
+    normals
+  }
 };

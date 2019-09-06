@@ -34,7 +34,8 @@ data
       // Create a new object
       current = {
         type: '',
-        faces: []
+        faces: [],
+        normals: []
       };
 
       switch (
@@ -79,6 +80,17 @@ data
         });
 
       current.faces.push(faces);
+    }
+
+    if (ln.startsWith('vn')) {
+      const normal = ln.split('vn ')
+        .pop()
+        .toString()
+        .toString()
+        .split(' ')
+        .map(parseFloat)
+
+        current.normals.push(normal);
     }
   });
 

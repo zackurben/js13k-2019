@@ -18,7 +18,7 @@ if (!gl) {
   console.error('no gl context');
 }
 
-const { Basic, MultiColored, Line } = Shaders(gl);
+const { Basic, MultiColored, Line, Lighted } = Shaders(gl);
 const { Node, Cube, Plane, Axis } = Primitive({ Basic, Line });
 const world = new Node();
 const camera = new Camera({
@@ -91,10 +91,13 @@ world.addComponent(player);
 
 const objs = [].concat(
   Data.objs.map(obj => {
-    let { type, faces, color } = obj;
+    let { type, faces, color, normals: normal } = obj;
+    const {data, normals} = Triangulation(faces, Data.vertices, normal);
     return new types[type]({
-      data: Triangulation(faces, Data.vertices).flat(),
-      color
+      data,
+      normals,
+      color,
+      shader: normals && normals.length !== 0 ? Lighted : Basic
     });
   }),
   [primary, secondary, axis]

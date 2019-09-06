@@ -82,24 +82,38 @@ export default ({ gl, Basic, Line }) => {
       color = [Math.random(), Math.random(), Math.random(), 1],
       update = () => {},
       shader = Basic,
-      parent
+      parent,
+      normals = []
     } = {}) {
       super({ parent, translation, rotation, scale });
 
       this.data = data;
+      this.normals = normals;
+
       this.color = color;
       if (this.color.length === 3) {
         this.color.push(1);
+
+        if (shader != Basic) {
+          const iter = parseInt(this.data.length / 3);
+          const oldColor = this.color.slice(0);
+          this.color = [];
+          for (let i = 0; i < iter; i++) {
+            this.color = this.color.concat(...oldColor);
+          }
+        }
       }
+      console.log(this);
 
       this.update = update;
       this.shader = shader;
 
       // Init the shader.
-      const { vao, vbo, vbo_color } = this.shader.init(this);
+      const { vao, vbo, vbo_color, vbo_normals } = this.shader.init(this);
       this.vao = vao;
       this.vbo = vbo;
       this.vbo_color = vbo_color;
+      this.vbo_normals = vbo_normals;
     }
 
     render({ camera }) {
