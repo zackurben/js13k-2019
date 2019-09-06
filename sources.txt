@@ -4,3 +4,8 @@ http://paulbourke.net/dataformats/mtl/
 https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_model_view_projection
 https://webgl2fundamentals.org/
 https://keycode.info/
+https://learnopengl.com/Getting-started/Camera
+http://in2gpu.com/2016/02/26/opengl-fps-camera/
+http://www.mbsoftworks.sk/tutorials/opengl4/005-camera-pt1-simple-walking-camera/
+https://gamedev.stackexchange.com/questions/136174/im-rotating-an-object-on-two-axes-so-why-does-it-keep-twisting-around-the-thir
+

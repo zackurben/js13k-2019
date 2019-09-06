@@ -160,6 +160,67 @@ export default {
     ];
   },
 
+  addVectors(a, b) {
+    let out = new Float32Array(3);
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    out[2] = a[2] + b[2];
+    return out;
+  },
+
+  subtractVectors(a, b) {
+    let out = new Float32Array(3);
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    out[2] = a[2] - b[2];
+    return out;
+  },
+
+  lookAt(cameraPosition, target, up) {
+    let out = new Float32Array(16);
+    let zAxis = this.normalize(this.subtractVectors(cameraPosition, target));
+    let xAxis = this.normalize(this.cross(up, zAxis));
+    let yAxis = this.normalize(this.cross(zAxis, xAxis));
+
+    out[0] = xAxis[0];
+    out[1] = xAxis[1];
+    out[2] = xAxis[2];
+    out[3] = 0;
+    out[4] = yAxis[0];
+    out[5] = yAxis[1];
+    out[6] = yAxis[2];
+    out[7] = 0;
+    out[8] = zAxis[0];
+    out[9] = zAxis[1];
+    out[10] = zAxis[2];
+    out[11] = 0;
+    out[12] = cameraPosition[0];
+    out[13] = cameraPosition[1];
+    out[14] = cameraPosition[2];
+    out[15] = 1;
+    return out;
+  },
+
+  normalize(v) {
+    let out = new Float32Array(3);
+    var length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    // make sure we don't divide by 0.
+    if (length > 0.00001) {
+      out[0] = v[0] / length;
+      out[1] = v[1] / length;
+      out[2] = v[2] / length;
+    }
+    return out;
+  },
+
+  cross(a, b) {
+    let out = new Float32Array(3);
+    out[0] = a[1] * b[2] - a[2] * b[1];
+    out[1] = a[2] * b[0] - a[0] * b[2];
+    out[2] = a[0] * b[1] - a[1] * b[0];
+    return out;
+  },
+
   multiply: function(a, b) {
     var a00 = a[0 * 4 + 0];
     var a01 = a[0 * 4 + 1];
@@ -213,6 +274,27 @@ export default {
     ];
   },
 
+  copy(src) {
+    let dst = new Float32Array(16);
+    dst[0] = src[0];
+    dst[1] = src[1];
+    dst[2] = src[2];
+    dst[3] = src[3];
+    dst[4] = src[4];
+    dst[5] = src[5];
+    dst[6] = src[6];
+    dst[7] = src[7];
+    dst[8] = src[8];
+    dst[9] = src[9];
+    dst[10] = src[10];
+    dst[11] = src[11];
+    dst[12] = src[12];
+    dst[13] = src[13];
+    dst[14] = src[14];
+    dst[15] = src[15];
+    return dst;
+  },
+
   translation: function(tx, ty, tz) {
     return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, tx, ty, tz, 1];
   },
@@ -260,5 +342,13 @@ export default {
 
   scale: function(m, sx, sy, sz) {
     return this.multiply(m, this.scaling(sx, sy, sz));
+  },
+
+  getScale(mat) {
+    return [mat[0], mat[5], mat[10]];
+  },
+
+  getTranslation(mat) {
+    return [mat[12], mat[13], mat[14]];
   }
 };

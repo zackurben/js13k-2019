@@ -43,6 +43,8 @@ data
           .pop()
           .toString()
           .toLowerCase()
+          .split('.')
+          .shift()
       ) {
         case 'cube':
           current.type = 'Cube';
