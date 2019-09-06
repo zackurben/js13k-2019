@@ -1,3 +1,5 @@
+'use';
+
 import StatCache from './StatCache';
 import Primitive from './Primitive';
 import Player from './Player';
@@ -29,21 +31,14 @@ const player = new Player({
   translation: [0, 0, 0],
   rotation: [0, 0, 0]
 });
-// const cameraOffset = [0, 2, 4];
 
-// Add a camera script to follow the player.
-// camera.update = delta => {
-//   // camera.translation = m4.addVectors(player.translation, cameraOffset);
-//   // camera.rotation = player.rotation;
-//   // camera.setMatrix();
-// };
 input.update = delta => {
   const _rspeed = input.viewSpeed * (delta / 1000);
   const [x, y, z] = input.getRotation().map(i => (i *= _rspeed));
   let rotation = m4.identity();
-  rotation = m4.multiply(rotation, m4.xRotation(x))
-  rotation = m4.multiply(rotation, m4.yRotation(y))
-  rotation = m4.multiply(rotation, m4.zRotation(z))
+  rotation = m4.multiply(rotation, m4.xRotation(x));
+  rotation = m4.multiply(rotation, m4.yRotation(y));
+  rotation = m4.multiply(rotation, m4.zRotation(z));
 
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
@@ -55,7 +50,7 @@ input.update = delta => {
 
   // Update the rotation and translation, so we can reset the matrix without
   // losing positional data.
-  player.rotation = m4.addVectors(player.rotation, [x, y, z])
+  player.rotation = m4.addVectors(player.rotation, [x, y, z]);
   player.translation = m4.getTranslation(player.localMatrix);
   player.setMatrix();
 };
@@ -74,10 +69,7 @@ const primary = new Cube({
   translation: [0, 0, 0],
   color: [1, 1, 1],
   update(delta) {
-    this.localMatrix = m4.multiply(
-      this.localMatrix,
-      m4.yRotation(delta / 1000)
-    );
+    this.rotation = m4.addVectors(this.rotation, [0, delta / 1000, 0]);
   }
 });
 const secondary = new Cube({
@@ -85,7 +77,7 @@ const secondary = new Cube({
   color: [0.9, 0.7, 0.3],
   scale: [0.5, 0.5, 0.5],
   update(delta) {
-    this.localMatrix = m4.multiply(this.localMatrix, m4.yRotation(delta / 100));
+    this.rotation = m4.addVectors(this.rotation, [0, delta / 100, 0]);
   }
 });
 const axis = new Axis({
@@ -128,7 +120,7 @@ let delta;
   // Render each of our objects
   objs.forEach(item => {
     if (item.update) item.update(delta, item);
-    if (item.setMatrix) item.setMatrix()
+    if (item.setMatrix) item.setMatrix();
     if (item.render) item.render({ camera });
   });
 
@@ -144,9 +136,7 @@ let delta;
     camera rotation: ${camera.rotation.map(radToDisplayDeg)}
     primary translation: ${primary.translation}
     primary rotation: ${primary.rotation.map(radToDisplayDeg)}
-    player loc: ${m4.getTranslation(player.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
-    
     camera world: ${displayMat(camera.worldMatrix)}
     `;
   }

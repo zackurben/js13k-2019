@@ -16,9 +16,21 @@ export function trim(n) {
 
 export function displayMat(mat) {
   return `
-      ${mat.slice(0, 4).map(trim).join(', ')}
-      ${mat.slice(4, 8).map(trim).join(', ')}
-      ${mat.slice(8, 12).map(trim).join(', ')}
-      ${mat.slice(12, 16).map(trim).join(', ')}
+      ${mat
+        .slice(0, 4)
+        .map(trim)
+        .join(', ')}
+      ${mat
+        .slice(4, 8)
+        .map(trim)
+        .join(', ')}
+      ${mat
+        .slice(8, 12)
+        .map(trim)
+        .join(', ')}
+      ${mat
+        .slice(12, 16)
+        .map(trim)
+        .join(', ')}
   `;
 }
