@@ -31,8 +31,6 @@ export default (faces, vertices, normal) => {
   data = data.flat();
   normals = normals.flat();
 
-  console.log(JSON.stringify(normals));
-
   return {
     data,
     normals

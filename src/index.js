@@ -135,12 +135,8 @@ let delta;
 
     fps.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
-    player translation: ${player.translation}
-    player rotation: ${player.rotation.map(radToDisplayDeg)}
-    camera translation: ${camera.translation}
-    camera rotation: ${camera.rotation.map(radToDisplayDeg)}
-    primary translation: ${primary.translation}
-    primary rotation: ${primary.rotation.map(radToDisplayDeg)}
+    primary world: ${displayMat(primary.worldMatrix)}
+    secondary world: ${displayMat(secondary.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
     camera world: ${displayMat(camera.worldMatrix)}
     `;

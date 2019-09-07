@@ -103,7 +103,6 @@ export default ({ gl, Basic, Line }) => {
           }
         }
       }
-      console.log(this);
 
       this.update = update;
       this.shader = shader;

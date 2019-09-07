@@ -26,15 +26,6 @@ export default class Camera extends Node {
     this.speed = speed;
   }
 
-  // setMatrix() {
-  //   this.localMatrix = m4.translation(...this.translation);
-  //   // this.localMatrix = m4.xRotate(this.localMatrix, this.rotation[0]);
-  //   // this.localMatrix = m4.yRotate(this.localMatrix, this.rotation[1]);
-  //   // this.localMatrix = m4.zRotate(this.localMatrix, this.rotation[2]);
-
-  //   // this.localMatrix = m4.lookAt(this.localMatrix, m4.addVectors(this.translation, [0, 0, -1]), [0, 1, 0])
-  // }
-
   getProjectionMatrix() {
     return m4.perspective(
       this.fieldOfViewRadians,
