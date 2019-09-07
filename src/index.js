@@ -37,7 +37,6 @@ const player = new Player({
 input.update = delta => {
   const _rspeed = input.viewSpeed * (delta / 1000);
   const [x, y, z] = input.getRotation().map(i => (i *= _rspeed));
-  // let rotation = m4.identity();
   player.localMatrix = m4.multiply(player.localMatrix, m4.xRotation(x));
   player.localMatrix = m4.multiply(player.localMatrix, m4.yRotation(y));
   player.localMatrix = m4.multiply(player.localMatrix, m4.zRotation(z));
@@ -45,17 +44,6 @@ input.update = delta => {
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
   player.localMatrix = m4.translate(player.localMatrix, ...movement);
-  // let translation = m4.translation(...movement);
-  // let out = m4.multiply(rotation, translation);
-
-  // Get the players new location.
-  // player.localMatrix = m4.multiply(player.localMatrix, out);
-
-  // Update the rotation and translation, so we can reset the matrix without
-  // losing positional data.
-  // player.rotation = m4.addVectors(player.rotation, [x, y, z]);
-  // player.translation = m4.getTranslation(player.localMatrix);
-  // player.setMatrix();
 };
 
 const FPS = new StatCache();
@@ -92,25 +80,26 @@ const axis = new Axis({
   scale: [10, 10, 10]
 });
 
-Data.objs.map((obj, i) => {
+const map = Data.objs.map((obj, i) => {
   let { type, faces, color, normals: normal } = obj;
   const { data, normals, translation } = Triangulation(
     faces,
     Data.vertices,
     normal
   );
-  console.log(translation);
+
   return new types[type]({
     parent: world,
     data,
     translation,
+    scale: [0.5, 0.5, 0.5],
     normals,
     color,
     shader: normals && normals.length !== 0 ? Lighted : Basic,
     update(delta) {
       if (i !== 0) {
         return;
-      }
+      }    
 
       this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
     }
@@ -147,8 +136,8 @@ let delta;
     world world: ${displayMat(world.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
     camera world: ${displayMat(camera.worldMatrix)}
-    target world: ${displayMat(world.components[3].worldMatrix)}
-    target local: ${displayMat(world.components[3].localMatrix)}
+    target world: ${displayMat(map[0].worldMatrix)}
+    target local: ${displayMat(map[0].localMatrix)}
     `;
   }
   lastRender = timestamp;
