@@ -5,11 +5,12 @@ export class Node {
     parent,
     translation = [0, 0, 0],
     rotation = [0, 0, 0],
-    scale = [1, 1, 1]
+    scale = [1, 1, 1],
+    components = []
   } = {}) {
     this.localMatrix = m4.identity();
     this.worldMatrix = m4.identity();
-    this.components = [];
+    this.components = components;
 
     this.translation = translation;
     this.rotation = rotation;
@@ -46,6 +47,7 @@ export class Node {
   }
 
   update(delta) {
+    this.setMatrix();
     this.components.forEach(c => {
       if (c.update) {
         c.update(delta);
@@ -83,9 +85,10 @@ export default ({ gl, Basic, Line }) => {
       update = () => {},
       shader = Basic,
       parent,
-      normals = []
+      normals = [],
+      components
     } = {}) {
-      super({ parent, translation, rotation, scale });
+      super({ parent, components, translation, rotation, scale });
 
       this.data = data;
       this.normals = normals;

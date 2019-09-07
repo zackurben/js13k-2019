@@ -28,6 +28,8 @@ const camera = new Camera({
 });
 const input = Input({ canvas });
 const player = new Player({
+  parent: world,
+  components: [camera, input],
   translation: [0, 0, 0],
   rotation: [0, 0, 0]
 });
@@ -54,8 +56,7 @@ input.update = delta => {
   player.translation = m4.getTranslation(player.localMatrix);
   player.setMatrix();
 };
-player.addComponent(camera);
-player.addComponent(input);
+
 
 const FPS = new StatCache();
 const DRAW = new StatCache();
@@ -66,6 +67,7 @@ let types = {
 };
 
 const primary = new Cube({
+  parent: world,
   translation: [0, 0, 0],
   color: [1, 1, 1],
   shader: Lighted,
@@ -74,6 +76,7 @@ const primary = new Cube({
   }
 });
 const secondary = new Cube({
+  parent: primary,
   translation: [1, 1, -1],
   color: [0.9, 0.7, 0.3],
   scale: [0.5, 0.5, 0.5],
@@ -83,27 +86,25 @@ const secondary = new Cube({
   }
 });
 const axis = new Axis({
+  parent: world,
   scale: [10, 10, 10]
 });
 
-world.addComponent(axis);
-world.addComponent(primary);
-primary.addComponent(secondary);
-world.addComponent(player);
-
-const objs = [].concat(
-  Data.objs.map(obj => {
-    let { type, faces, color, normals: normal } = obj;
-    const { data, normals } = Triangulation(faces, Data.vertices, normal);
-    return new types[type]({
-      data,
-      normals,
-      color,
-      shader: normals && normals.length !== 0 ? Lighted : Basic
-    });
-  }),
-  [primary, secondary, axis]
-);
+// world.addComponent(player);
+Data.objs.map(obj => {
+  let { type, faces, color, normals: normal } = obj;
+  const { data, normals } = Triangulation(faces, Data.vertices, normal);
+  return new types[type]({
+    parent: world,
+    data,
+    normals,
+    color,
+    shader: normals && normals.length !== 0 ? Lighted : Basic,
+    // update(delta) {
+    //   this.rotation = m4.addVectors(this.rotation, [0, delta / 1000, 0]);
+    // }
+  });
+});
 
 // RENDER
 // Define the viewport dimensions.
@@ -115,19 +116,17 @@ let lastRender = 0;
 let delta;
 (function render(timestamp = 0) {
   delta = timestamp - lastRender;
-  world.updateWorldMatrix();
-  player.update(delta);
 
   // Clear the canvas
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Render each of our objects
-  objs.forEach(item => {
+  world.updateWorldMatrix();
+  world.components.forEach(item => {
     if (item.update) item.update(delta, item);
     if (item.setMatrix) item.setMatrix();
     if (item.render) item.render({ camera });
-  });
+  })
 
   if (fps) {
     FPS.add(1000 / delta);
@@ -135,6 +134,7 @@ let delta;
 
     fps.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
+    world world: ${displayMat(world.worldMatrix)}
     primary world: ${displayMat(primary.worldMatrix)}
     secondary world: ${displayMat(secondary.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}

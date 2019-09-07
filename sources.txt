@@ -9,3 +9,4 @@ http://in2gpu.com/2016/02/26/opengl-fps-camera/
 http://www.mbsoftworks.sk/tutorials/opengl4/005-camera-pt1-simple-walking-camera/
 https://gamedev.stackexchange.com/questions/136174/im-rotating-an-object-on-two-axes-so-why-does-it-keep-twisting-around-the-thir
 https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Lighting_in_WebGL
+https://learnopengl.com/Lighting/Basic-Lighting

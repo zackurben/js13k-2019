@@ -14,12 +14,14 @@ uniform mat4 u_projection;
 uniform mat4 u_world;
 
 out vec4 v_color;
+out vec3 v_normal_location;
 out vec3 v_normal;
 
 void main() {
   gl_Position = u_projection * inverse(u_view) * u_model * a_position;
   v_color = a_color;
-  v_normal = mat3(inverse(u_view) * u_model) * a_normal;
+  v_normal_location = vec3(u_model * a_position);
+  v_normal = a_normal;
 }
 `;
 
@@ -29,6 +31,7 @@ const fs = `#version 300 es
 precision mediump float;
 
 in vec4 v_color;
+in vec3 v_normal_location;
 in vec3 v_normal;
 
 uniform vec3 u_ambient_light;
@@ -37,7 +40,9 @@ uniform vec3 u_light;
 out vec4 outColor;
 
 void main() {
-  float light = dot(normalize(v_normal), normalize(u_light));
+  vec3 norm = normalize(v_normal);
+  vec3 lightDir = normalize(u_light - v_normal_location);
+  float light = dot(norm, lightDir);
 
   outColor = v_color;
 
@@ -63,7 +68,7 @@ export default gl => {
     'u_model',
     'u_view',
     'u_projection',
-    'u_world',
+    'u_world'
   ]);
 
   const size = 3; // 3 components per iteration
@@ -152,14 +157,8 @@ export default gl => {
 
       // Use our pre configured VAO
       gl.bindVertexArray(obj.vao);
-      gl.uniform3fv(
-        attributes.u_ambient_light,
-        [0.2, 0.2, 0.2]
-      );
-      gl.uniform3fv(
-        attributes.u_light,
-        [0.5, 1, 0.3]
-      );
+      gl.uniform3fv(attributes.u_ambient_light, [0.2, 0.2, 0.2]);
+      gl.uniform3fv(attributes.u_light, [-3, 2, 3]);
       gl.uniformMatrix4fv(attributes.u_model, false, obj.worldMatrix);
       gl.uniformMatrix4fv(attributes.u_view, false, camera.worldMatrix);
       gl.uniformMatrix4fv(
@@ -167,11 +166,7 @@ export default gl => {
         false,
         camera.getProjectionMatrix()
       );
-      gl.uniformMatrix4fv(
-        attributes.u_world,
-        false,
-        obj.localMatrix
-      );
+      gl.uniformMatrix4fv(attributes.u_world, false, obj.localMatrix);
 
       gl.drawArrays(gl.TRIANGLES, offset, obj.data.length / size);
     }
