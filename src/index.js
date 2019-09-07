@@ -1,4 +1,4 @@
-'use';
+'use strict';
 
 import StatCache from './StatCache';
 import Primitive from './Primitive';
@@ -70,7 +70,7 @@ const primary = new Cube({
   parent: world,
   translation: [1, 0, 0],
   color: [1, 1, 1],
-  shader: Basic,
+  shader: Lighted,
   scale: [0.5, 0.5, 0.5],
   update(delta) {
     this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
@@ -81,7 +81,7 @@ const secondary = new Cube({
   translation: [1, 1, -1],
   color: [0.9, 0.7, 0.3],
   scale: [0.5, 0.5, 0.5],
-  shader: Basic,
+  shader: Lighted,
   update(delta) {
     this.localMatrix = m4.yRotate(this.localMatrix, -delta / 100);
   }
@@ -94,10 +94,16 @@ const axis = new Axis({
 
 Data.objs.map((obj, i) => {
   let { type, faces, color, normals: normal } = obj;
-  const { data, normals } = Triangulation(faces, Data.vertices, normal);
+  const { data, normals, translation } = Triangulation(
+    faces,
+    Data.vertices,
+    normal
+  );
+  console.log(translation);
   return new types[type]({
     parent: world,
     data,
+    translation,
     normals,
     color,
     shader: normals && normals.length !== 0 ? Lighted : Basic,
@@ -127,7 +133,7 @@ let delta;
 
   world.updateWorldMatrix();
   world.components.forEach(item => {
-    if (item.update) item.update(delta, item);
+    if (item.update) item.update(delta);
     if (item.updateComponents) item.updateComponents(delta);
     if (item.render) item.render({ camera });
   });
@@ -139,10 +145,10 @@ let delta;
     fps.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
     world world: ${displayMat(world.worldMatrix)}
-    primary world: ${displayMat(primary.worldMatrix)}
-    secondary world: ${displayMat(secondary.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
     camera world: ${displayMat(camera.worldMatrix)}
+    target world: ${displayMat(world.components[3].worldMatrix)}
+    target local: ${displayMat(world.components[3].localMatrix)}
     `;
   }
   lastRender = timestamp;
