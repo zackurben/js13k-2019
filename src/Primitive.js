@@ -24,21 +24,16 @@ export class Node {
   }
 
   setParent(p) {
-    // remove and clean up old parent
-    if (this.parent) {
-      this.parent.removeComponent(this);
-    }
-
+    // remove the old parent
+    this.parent && this.parent.removeComponent(this);
     this.parent = p;
     this.parent.addComponent(this);
   }
 
   removeComponent(c) {
-    if (this.components) {
-      let loc = this.components.indexOf(c);
-      if (loc !== -1) {
-        this.components.splice(loc, 1);
-      }
+    let loc = this.components.indexOf(c);
+    if (loc !== -1) {
+      this.components.splice(loc, 1);
     }
   }
 
@@ -46,18 +41,23 @@ export class Node {
     this.components.push(c);
   }
 
-  update(delta) {
-    this.setMatrix();
-    this.components.forEach(c => {
-      if (c.update) {
-        c.update(delta);
-      }
-    });
+  render({ camera }) {
+    if (this.shader) {
+      this.shader.render(this, { camera });
+    }
+
+    this.components.forEach(c => c.render && c.render({ camera }));
   }
 
-  updateWorldMatrix(parentWorldMatrix) {
-    if (parentWorldMatrix) {
-      this.worldMatrix = m4.multiply(parentWorldMatrix, this.localMatrix);
+  updateComponents(delta) {
+    this.components.forEach(c => c.update && c.update(delta));
+  }
+
+  update(delta) {}
+
+  updateWorldMatrix(matrix) {
+    if (matrix) {
+      this.worldMatrix = m4.multiply(matrix, this.localMatrix);
     } else {
       this.worldMatrix = this.localMatrix.slice(0);
     }
@@ -116,10 +116,6 @@ export default ({ gl, Basic, Line }) => {
       this.vbo = vbo;
       this.vbo_color = vbo_color;
       this.vbo_normals = vbo_normals;
-    }
-
-    render({ camera }) {
-      this.shader.render(this, { camera });
     }
   }
 

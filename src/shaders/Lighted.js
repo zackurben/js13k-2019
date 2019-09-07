@@ -48,7 +48,7 @@ void main() {
 
   // Lets multiply just the color portion (not the alpha)
   // by the light
-  outColor.rgb *= light;
+  outColor.rgb *= u_ambient_light + light;
 }
 `;
 
@@ -151,14 +151,14 @@ export default gl => {
         vbo_normals
       };
     },
-    render(obj, { player, camera }) {
+    render(obj, { camera }) {
       // Render
       gl.useProgram(program);
 
       // Use our pre configured VAO
       gl.bindVertexArray(obj.vao);
       gl.uniform3fv(attributes.u_ambient_light, [0.2, 0.2, 0.2]);
-      gl.uniform3fv(attributes.u_light, [-3, 2, 3]);
+      gl.uniform3fv(attributes.u_light, [0, 2, 0]);
       gl.uniformMatrix4fv(attributes.u_model, false, obj.worldMatrix);
       gl.uniformMatrix4fv(attributes.u_view, false, camera.worldMatrix);
       gl.uniformMatrix4fv(
@@ -166,7 +166,7 @@ export default gl => {
         false,
         camera.getProjectionMatrix()
       );
-      gl.uniformMatrix4fv(attributes.u_world, false, obj.localMatrix);
+      gl.uniformMatrix4fv(attributes.u_world, false, obj.worldMatrix);
 
       gl.drawArrays(gl.TRIANGLES, offset, obj.data.length / size);
     }

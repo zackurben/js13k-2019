@@ -3,7 +3,14 @@
 import { Node } from './Primitive';
 
 export default class Player extends Node {
-  constructor({ speed = 5, translation, rotation, scale, parent, components } = {}) {
+  constructor({
+    speed = 5,
+    translation,
+    rotation,
+    scale,
+    parent,
+    components
+  } = {}) {
     super({
       translation,
       rotation,

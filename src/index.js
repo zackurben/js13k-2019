@@ -37,26 +37,26 @@ const player = new Player({
 input.update = delta => {
   const _rspeed = input.viewSpeed * (delta / 1000);
   const [x, y, z] = input.getRotation().map(i => (i *= _rspeed));
-  let rotation = m4.identity();
-  rotation = m4.multiply(rotation, m4.xRotation(x));
-  rotation = m4.multiply(rotation, m4.yRotation(y));
-  rotation = m4.multiply(rotation, m4.zRotation(z));
+  // let rotation = m4.identity();
+  player.localMatrix = m4.multiply(player.localMatrix, m4.xRotation(x));
+  player.localMatrix = m4.multiply(player.localMatrix, m4.yRotation(y));
+  player.localMatrix = m4.multiply(player.localMatrix, m4.zRotation(z));
 
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
-  let translation = m4.translation(...movement);
-  let out = m4.multiply(rotation, translation);
+  player.localMatrix = m4.translate(player.localMatrix, ...movement);
+  // let translation = m4.translation(...movement);
+  // let out = m4.multiply(rotation, translation);
 
   // Get the players new location.
-  player.localMatrix = m4.multiply(player.localMatrix, out);
+  // player.localMatrix = m4.multiply(player.localMatrix, out);
 
   // Update the rotation and translation, so we can reset the matrix without
   // losing positional data.
-  player.rotation = m4.addVectors(player.rotation, [x, y, z]);
-  player.translation = m4.getTranslation(player.localMatrix);
-  player.setMatrix();
+  // player.rotation = m4.addVectors(player.rotation, [x, y, z]);
+  // player.translation = m4.getTranslation(player.localMatrix);
+  // player.setMatrix();
 };
-
 
 const FPS = new StatCache();
 const DRAW = new StatCache();
@@ -68,11 +68,12 @@ let types = {
 
 const primary = new Cube({
   parent: world,
-  translation: [0, 0, 0],
+  translation: [1, 0, 0],
   color: [1, 1, 1],
-  shader: Lighted,
+  shader: Basic,
+  scale: [0.5, 0.5, 0.5],
   update(delta) {
-    this.rotation = m4.addVectors(this.rotation, [0, delta / 1000, 0]);
+    this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
   }
 });
 const secondary = new Cube({
@@ -80,18 +81,18 @@ const secondary = new Cube({
   translation: [1, 1, -1],
   color: [0.9, 0.7, 0.3],
   scale: [0.5, 0.5, 0.5],
-  shader: Lighted,
+  shader: Basic,
   update(delta) {
-    this.rotation = m4.addVectors(this.rotation, [0, delta / 100, 0]);
+    this.localMatrix = m4.yRotate(this.localMatrix, -delta / 100);
   }
 });
+
 const axis = new Axis({
   parent: world,
   scale: [10, 10, 10]
 });
 
-// world.addComponent(player);
-Data.objs.map(obj => {
+Data.objs.map((obj, i) => {
   let { type, faces, color, normals: normal } = obj;
   const { data, normals } = Triangulation(faces, Data.vertices, normal);
   return new types[type]({
@@ -100,23 +101,26 @@ Data.objs.map(obj => {
     normals,
     color,
     shader: normals && normals.length !== 0 ? Lighted : Basic,
-    // update(delta) {
-    //   this.rotation = m4.addVectors(this.rotation, [0, delta / 1000, 0]);
-    // }
+    update(delta) {
+      if (i !== 0) {
+        return;
+      }
+
+      this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
+    }
   });
 });
 
 // RENDER
-// Define the viewport dimensions.
-gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-gl.enable(gl.CULL_FACE);
-gl.enable(gl.DEPTH_TEST);
-
 let lastRender = 0;
 let delta;
 (function render(timestamp = 0) {
   delta = timestamp - lastRender;
 
+  // Define the viewport dimensions.
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  gl.enable(gl.CULL_FACE);
+  gl.enable(gl.DEPTH_TEST);
   // Clear the canvas
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -124,9 +128,9 @@ let delta;
   world.updateWorldMatrix();
   world.components.forEach(item => {
     if (item.update) item.update(delta, item);
-    if (item.setMatrix) item.setMatrix();
+    if (item.updateComponents) item.updateComponents(delta);
     if (item.render) item.render({ camera });
-  })
+  });
 
   if (fps) {
     FPS.add(1000 / delta);
