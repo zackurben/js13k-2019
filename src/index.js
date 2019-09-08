@@ -1,4 +1,4 @@
-'use';
+'use strict';
 
 import StatCache from './StatCache';
 import Primitive from './Primitive';
@@ -18,7 +18,7 @@ if (!gl) {
   console.error('no gl context');
 }
 
-const { Basic, MultiColored, Line } = Shaders(gl);
+const { Basic, MultiColored, Line, Lighted } = Shaders(gl);
 const { Node, Cube, Plane, Axis } = Primitive({ Basic, Line });
 const world = new Node();
 const camera = new Camera({
@@ -28,6 +28,8 @@ const camera = new Camera({
 });
 const input = Input({ canvas });
 const player = new Player({
+  parent: world,
+  components: [camera, input],
   translation: [0, 0, 0],
   rotation: [0, 0, 0]
 });
@@ -35,27 +37,14 @@ const player = new Player({
 input.update = delta => {
   const _rspeed = input.viewSpeed * (delta / 1000);
   const [x, y, z] = input.getRotation().map(i => (i *= _rspeed));
-  let rotation = m4.identity();
-  rotation = m4.multiply(rotation, m4.xRotation(x));
-  rotation = m4.multiply(rotation, m4.yRotation(y));
-  rotation = m4.multiply(rotation, m4.zRotation(z));
+  player.localMatrix = m4.multiply(player.localMatrix, m4.xRotation(x));
+  player.localMatrix = m4.multiply(player.localMatrix, m4.yRotation(y));
+  player.localMatrix = m4.multiply(player.localMatrix, m4.zRotation(z));
 
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
-  let translation = m4.translation(...movement);
-  let out = m4.multiply(rotation, translation);
-
-  // Get the players new location.
-  player.localMatrix = m4.multiply(player.localMatrix, out);
-
-  // Update the rotation and translation, so we can reset the matrix without
-  // losing positional data.
-  player.rotation = m4.addVectors(player.rotation, [x, y, z]);
-  player.translation = m4.getTranslation(player.localMatrix);
-  player.setMatrix();
+  player.localMatrix = m4.translate(player.localMatrix, ...movement);
 };
-player.addComponent(camera);
-player.addComponent(input);
 
 const FPS = new StatCache();
 const DRAW = new StatCache();
@@ -66,61 +55,77 @@ let types = {
 };
 
 const primary = new Cube({
-  translation: [0, 0, 0],
+  parent: world,
+  translation: [1, 0, 0],
   color: [1, 1, 1],
+  shader: Lighted,
+  scale: [0.5, 0.5, 0.5],
   update(delta) {
-    this.rotation = m4.addVectors(this.rotation, [0, delta / 1000, 0]);
+    this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
   }
 });
 const secondary = new Cube({
+  parent: primary,
   translation: [1, 1, -1],
   color: [0.9, 0.7, 0.3],
   scale: [0.5, 0.5, 0.5],
+  shader: Lighted,
   update(delta) {
-    this.rotation = m4.addVectors(this.rotation, [0, delta / 100, 0]);
+    this.localMatrix = m4.yRotate(this.localMatrix, -delta / 1000);
+    this.localMatrix = m4.xRotate(this.localMatrix, -delta / 1000);
+    this.localMatrix = m4.zRotate(this.localMatrix, -delta / 1000);
   }
 });
+
 const axis = new Axis({
+  parent: world,
   scale: [10, 10, 10]
 });
 
-world.addComponent(axis);
-world.addComponent(primary);
-primary.addComponent(secondary);
-world.addComponent(player);
+const map = Data.objs.map((obj, i) => {
+  let { type, faces, color, normals: normal } = obj;
+  const { data, normals, translation } = Triangulation(
+    faces,
+    Data.vertices,
+    normal
+  );
 
-const objs = [].concat(
-  Data.objs.map(obj => {
-    let { type, faces, color } = obj;
-    return new types[type]({
-      data: Triangulation(faces, Data.vertices).flat(),
-      color
-    });
-  }),
-  [primary, secondary, axis]
-);
+  return new types[type]({
+    parent: world,
+    data,
+    translation,
+    scale: [0.5, 0.5, 0.5],
+    normals,
+    color,
+    shader: normals && normals.length !== 0 ? Lighted : Basic,
+    update(delta) {
+      if (i !== 0) {
+        return;
+      }
+
+      this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
+    }
+  });
+});
 
 // RENDER
-// Define the viewport dimensions.
-gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-gl.enable(gl.CULL_FACE);
-gl.enable(gl.DEPTH_TEST);
-
 let lastRender = 0;
 let delta;
 (function render(timestamp = 0) {
   delta = timestamp - lastRender;
-  world.updateWorldMatrix();
-  player.update(delta);
 
+  // Define the viewport dimensions.
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  gl.enable(gl.CULL_FACE);
+  gl.enable(gl.DEPTH_TEST);
   // Clear the canvas
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Render each of our objects
-  objs.forEach(item => {
-    if (item.update) item.update(delta, item);
-    if (item.setMatrix) item.setMatrix();
+  world.updateWorldMatrix();
+  world.components.forEach(item => {
+    if (item.update) item.update(delta);
+    if (item.updateComponents) item.updateComponents(delta);
     if (item.render) item.render({ camera });
   });
 
@@ -130,14 +135,8 @@ let delta;
 
     fps.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
-    player translation: ${player.translation}
-    player rotation: ${player.rotation.map(radToDisplayDeg)}
-    camera translation: ${camera.translation}
-    camera rotation: ${camera.rotation.map(radToDisplayDeg)}
-    primary translation: ${primary.translation}
-    primary rotation: ${primary.rotation.map(radToDisplayDeg)}
+    world world: ${displayMat(world.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
-    camera world: ${displayMat(camera.worldMatrix)}
     `;
   }
   lastRender = timestamp;

@@ -5,11 +5,12 @@ export class Node {
     parent,
     translation = [0, 0, 0],
     rotation = [0, 0, 0],
-    scale = [1, 1, 1]
+    scale = [1, 1, 1],
+    components = []
   } = {}) {
     this.localMatrix = m4.identity();
     this.worldMatrix = m4.identity();
-    this.components = [];
+    this.components = components;
 
     this.translation = translation;
     this.rotation = rotation;
@@ -23,21 +24,16 @@ export class Node {
   }
 
   setParent(p) {
-    // remove and clean up old parent
-    if (this.parent) {
-      this.parent.removeComponent(this);
-    }
-
+    // remove the old parent
+    this.parent && this.parent.removeComponent(this);
     this.parent = p;
     this.parent.addComponent(this);
   }
 
   removeComponent(c) {
-    if (this.components) {
-      let loc = this.components.indexOf(c);
-      if (loc !== -1) {
-        this.components.splice(loc, 1);
-      }
+    let loc = this.components.indexOf(c);
+    if (loc !== -1) {
+      this.components.splice(loc, 1);
     }
   }
 
@@ -45,17 +41,23 @@ export class Node {
     this.components.push(c);
   }
 
-  update(delta) {
-    this.components.forEach(c => {
-      if (c.update) {
-        c.update(delta);
-      }
-    });
+  render({ camera }) {
+    if (this.shader) {
+      this.shader.render(this, { camera });
+    }
+
+    this.components.forEach(c => c.render && c.render({ camera }));
   }
 
-  updateWorldMatrix(parentWorldMatrix) {
-    if (parentWorldMatrix) {
-      this.worldMatrix = m4.multiply(parentWorldMatrix, this.localMatrix);
+  updateComponents(delta) {
+    this.components.forEach(c => c.update && c.update(delta));
+  }
+
+  update(delta) {}
+
+  updateWorldMatrix(matrix) {
+    if (matrix) {
+      this.worldMatrix = m4.multiply(matrix, this.localMatrix);
     } else {
       this.worldMatrix = this.localMatrix.slice(0);
     }
@@ -82,28 +84,38 @@ export default ({ gl, Basic, Line }) => {
       color = [Math.random(), Math.random(), Math.random(), 1],
       update = () => {},
       shader = Basic,
-      parent
+      parent,
+      normals = [],
+      components
     } = {}) {
-      super({ parent, translation, rotation, scale });
+      super({ parent, components, translation, rotation, scale });
 
       this.data = data;
+      this.normals = normals;
+
       this.color = color;
       if (this.color.length === 3) {
         this.color.push(1);
+
+        if (shader != Basic) {
+          const iter = parseInt(this.data.length / 3);
+          const oldColor = this.color.slice(0);
+          this.color = [];
+          for (let i = 0; i < iter; i++) {
+            this.color = this.color.concat(...oldColor);
+          }
+        }
       }
 
       this.update = update;
       this.shader = shader;
 
       // Init the shader.
-      const { vao, vbo, vbo_color } = this.shader.init(this);
+      const { vao, vbo, vbo_color, vbo_normals } = this.shader.init(this);
       this.vao = vao;
       this.vbo = vbo;
       this.vbo_color = vbo_color;
-    }
-
-    render({ camera }) {
-      this.shader.render(this, { camera });
+      this.vbo_normals = vbo_normals;
     }
   }
 
@@ -111,6 +123,66 @@ export default ({ gl, Basic, Line }) => {
     constructor(args) {
       super({
         data: [
+          // left
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          0.5,
+          0.5,
+          -0.5,
+          0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          0.5,
+          -0.5,
+          0.5,
+          0.5,
+
+          // back
+          0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          0.5,
+          -0.5,
+          0.5,
+          0.5,
+          -0.5,
+          0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          -0.5,
+          0.5,
+          -0.5,
+
+          // right
+          0.5,
+          -0.5,
+          0.5,
+          0.5,
+          0.5,
+          -0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          -0.5,
+          0.5,
+          0.5,
+          -0.5,
+          -0.5,
+          0.5,
+          0.5,
+          -0.5,
+
           // front
           -0.5,
           -0.5,
@@ -136,46 +208,6 @@ export default ({ gl, Basic, Line }) => {
           0.5,
           0.5,
 
-          // back
-          0.5,
-          -0.5,
-          -0.5,
-          -0.5,
-          0.5,
-          -0.5,
-          0.5,
-          0.5,
-          -0.5,
-          0.5,
-          -0.5,
-          -0.5,
-          -0.5,
-          -0.5,
-          -0.5,
-          -0.5,
-          0.5,
-          -0.5,
-
-          // top
-          -0.5,
-          0.5,
-          0.5,
-          0.5,
-          0.5,
-          -0.5,
-          -0.5,
-          0.5,
-          -0.5,
-          -0.5,
-          0.5,
-          0.5,
-          0.5,
-          0.5,
-          0.5,
-          0.5,
-          0.5,
-          -0.5,
-
           // bottom
           -0.5,
           -0.5,
@@ -196,45 +228,140 @@ export default ({ gl, Basic, Line }) => {
           -0.5,
           0.5,
 
-          // left
-          -0.5,
-          -0.5,
-          -0.5,
-          -0.5,
-          0.5,
-          0.5,
-          -0.5,
-          0.5,
-          -0.5,
-          -0.5,
-          -0.5,
-          -0.5,
-          -0.5,
-          -0.5,
-          0.5,
-          -0.5,
-          0.5,
-          0.5,
-
-          // right
-          0.5,
-          -0.5,
-          0.5,
-          0.5,
-          0.5,
+          // top
           -0.5,
           0.5,
           0.5,
           0.5,
           0.5,
           -0.5,
-          0.5,
+          -0.5,
           0.5,
           -0.5,
           -0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5,
           0.5,
           0.5,
           -0.5
+        ],
+        normals: [
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+          0,
+          -1,
+          0,
+
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0
         ],
         ...args
       });
