@@ -71,7 +71,9 @@ const secondary = new Cube({
   scale: [0.5, 0.5, 0.5],
   shader: Lighted,
   update(delta) {
-    this.localMatrix = m4.yRotate(this.localMatrix, -delta / 100);
+    this.localMatrix = m4.yRotate(this.localMatrix, -delta / 1000);
+    this.localMatrix = m4.xRotate(this.localMatrix, -delta / 1000);
+    this.localMatrix = m4.zRotate(this.localMatrix, -delta / 1000);
   }
 });
 
@@ -99,7 +101,7 @@ const map = Data.objs.map((obj, i) => {
     update(delta) {
       if (i !== 0) {
         return;
-      }    
+      }
 
       this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
     }

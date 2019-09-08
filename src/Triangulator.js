@@ -6,14 +6,16 @@ export default (faces, vertices, normal) => {
 
   faces.map((face, i) => {
     const [a, b, c, d] = face;
-    data.push([
-      vertices[a],
-      vertices[b],
-      vertices[c],
-      vertices[a],
-      vertices[c],
-      vertices[d]
-    ].flat());
+    data.push(
+      [
+        vertices[a],
+        vertices[b],
+        vertices[c],
+        vertices[a],
+        vertices[c],
+        vertices[d]
+      ].flat()
+    );
 
     // Give each vertex in this face the same normals.
     normals.push(
@@ -28,7 +30,7 @@ export default (faces, vertices, normal) => {
 
   data = data.flat();
   normals = normals.flat();
-  
+
   // Determine our geometry offset
   let translation = data.slice(0, 3);
   translation[0] += 1;
@@ -42,8 +44,8 @@ export default (faces, vertices, normal) => {
     out.push([
       temp[0] - translation[0],
       temp[1] - translation[1],
-      temp[2] - translation[2],
-    ])
+      temp[2] - translation[2]
+    ]);
   }
   data = out.flat();
 
