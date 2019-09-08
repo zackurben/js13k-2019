@@ -1,6 +1,5 @@
 'use strict';
 
-import m4 from '../Matrix';
 import ShaderUtils from './ShaderUtils';
 
 const vs = `#version 300 es
@@ -11,17 +10,15 @@ in vec3 a_normal;
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
-uniform mat4 u_world;
 
 out vec4 v_color;
-out vec3 v_normal_location;
 out vec3 v_normal;
 
 void main() {
   gl_Position = u_projection * inverse(u_view) * u_model * a_position;
+
   v_color = a_color;
-  v_normal_location = vec3(u_model * a_position);
-  v_normal = a_normal;
+  v_normal = mat3(u_model) * a_normal;
 }
 `;
 
@@ -31,24 +28,21 @@ const fs = `#version 300 es
 precision mediump float;
 
 in vec4 v_color;
-in vec3 v_normal_location;
 in vec3 v_normal;
 
-uniform vec3 u_ambient_light;
 uniform vec3 u_light;
+uniform vec3 u_ambient_light;
 
 out vec4 outColor;
 
 void main() {
-  vec3 norm = normalize(v_normal);
-  vec3 lightDir = normalize(u_light - v_normal_location);
-  float light = dot(norm, lightDir);
+  float light = dot(normalize(u_light), normalize(v_normal));
 
   outColor = v_color;
 
   // Lets multiply just the color portion (not the alpha)
   // by the light
-  outColor.rgb *= u_ambient_light + light;
+  outColor.rgb *= light + u_ambient_light;
 }
 `;
 
@@ -67,8 +61,7 @@ export default gl => {
     'u_light',
     'u_model',
     'u_view',
-    'u_projection',
-    'u_world'
+    'u_projection'
   ]);
 
   const size = 3; // 3 components per iteration
@@ -157,8 +150,8 @@ export default gl => {
 
       // Use our pre configured VAO
       gl.bindVertexArray(obj.vao);
-      gl.uniform3fv(attributes.u_ambient_light, [0.2, 0.2, 0.2]);
-      gl.uniform3fv(attributes.u_light, [0, 2, 0]);
+      gl.uniform3fv(attributes.u_ambient_light, [0.4, 0.4, 0.4]);
+      gl.uniform3fv(attributes.u_light, [10, 2, 0]);
       gl.uniformMatrix4fv(attributes.u_model, false, obj.worldMatrix);
       gl.uniformMatrix4fv(attributes.u_view, false, camera.worldMatrix);
       gl.uniformMatrix4fv(
@@ -166,7 +159,6 @@ export default gl => {
         false,
         camera.getProjectionMatrix()
       );
-      gl.uniformMatrix4fv(attributes.u_world, false, obj.worldMatrix);
 
       gl.drawArrays(gl.TRIANGLES, offset, obj.data.length / size);
     }

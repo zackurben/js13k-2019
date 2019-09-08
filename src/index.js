@@ -135,9 +135,6 @@ let delta;
     fps: ${FPS.get()}
     world world: ${displayMat(world.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
-    camera world: ${displayMat(camera.worldMatrix)}
-    target world: ${displayMat(map[0].worldMatrix)}
-    target local: ${displayMat(map[0].localMatrix)}
     `;
   }
   lastRender = timestamp;
