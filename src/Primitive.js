@@ -6,7 +6,10 @@ export class Node {
     translation = [0, 0, 0],
     rotation = [0, 0, 0],
     scale = [1, 1, 1],
-    components = []
+    components = [],
+    kinematic = false,
+    rigid = false,
+    complex = false
   } = {}) {
     this.localMatrix = m4.identity();
     this.worldMatrix = m4.identity();
@@ -21,6 +24,13 @@ export class Node {
     }
 
     this.setMatrix();
+
+    // physics tracking
+    this.lastLocalMatrix = this.localMatrix;
+    this.kinematic = kinematic;
+    this.rigid = rigid;
+    this.complex = complex;
+    this.bbox = this.boundingBox();
   }
 
   setParent(p) {
@@ -49,8 +59,69 @@ export class Node {
     this.components.forEach(c => c.render && c.render({ camera }));
   }
 
-  updateComponents(delta) {
-    this.components.forEach(c => c.update && c.update(delta));
+  intersects(other) {
+    let a = this.bbox;
+    let b = other.bbox;
+
+    return (a.min.x <= b.max.x && a.max.x >= b.min.x) &&
+         (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
+         (a.min.z <= b.max.z && a.max.z >= b.min.z);
+  }
+
+  boundingBox() {
+    console.log('new box!');
+    if (!this.data) return;
+
+    // Break each object into tri verts
+    let geom = this.data.slice(0);
+    let out = [];
+    let temp;
+    while ((temp = geom.splice(0, 3)).length !== 0) {
+      out.push([
+        temp[0],
+        temp[1],
+        temp[2]
+      ]);
+    }
+
+    let min = out[0];
+    let max = out[0];
+    out.forEach(([x, y, z]) => {
+      min[0] = Math.min(min[0], x);
+      min[1] = Math.min(min[1], y);
+      min[2] = Math.min(min[2], z);
+      max[0] = Math.max(max[0], x);
+      max[1] = Math.max(max[1], y);
+      max[2] = Math.max(max[2], z);
+    });
+
+    return {min, max};
+  }
+
+  physics(delta, objects) {
+    if (!this.rigid) return;
+
+    // If the localMatrix has changed, recalculate the bounding box
+    if (this.lastLocalMatrix != this.localMatrix) {
+      this.lastLocalMatrix = this.localMatrix;
+      this.bbox = this.boundingBox();
+    }
+
+    objects.forEach(other => {
+      if (this.intersects(other)) {
+        console.log('intersection!', this, other);
+      }
+    })
+
+    // Apply gravity to non-kinematic objects
+    if (!this.kinematic) {
+      this.localMatrix = m4.translate(this.localMatrix, 0, -9.8 * delta, 0);
+    }
+
+    // Update each child object.
+    this.components.forEach(c => {
+      c.physics && c.physics(delta);
+    });
   }
 
   update(delta) {}
@@ -86,9 +157,21 @@ export default ({ gl, Basic, Line }) => {
       shader = Basic,
       parent,
       normals = [],
-      components
+      components,
+      rigid,
+      kinematic,
+      complex
     } = {}) {
-      super({ parent, components, translation, rotation, scale });
+      super({
+        parent,
+        components,
+        translation,
+        rotation,
+        scale,
+        rigid,
+        kinematic,
+        complex
+      });
 
       this.data = data;
       this.normals = normals;
@@ -397,6 +480,7 @@ export default ({ gl, Basic, Line }) => {
           0,
           -1
         ],
+        normals: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
         ...args
       });
     }

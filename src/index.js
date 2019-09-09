@@ -30,7 +30,7 @@ const input = Input({ canvas });
 const player = new Player({
   parent: world,
   components: [camera, input],
-  translation: [0, 0, 0],
+  translation: [0, 0, 5],
   rotation: [0, 0, 0]
 });
 
@@ -60,6 +60,7 @@ const primary = new Cube({
   color: [1, 1, 1],
   shader: Lighted,
   scale: [0.5, 0.5, 0.5],
+  rigid: true,
   update(delta) {
     this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
   }
@@ -75,6 +76,15 @@ const secondary = new Cube({
     this.localMatrix = m4.xRotate(this.localMatrix, -delta / 1000);
     this.localMatrix = m4.zRotate(this.localMatrix, -delta / 1000);
   }
+});
+const ground = new Plane({
+  parent: world,
+  translation: [0, -3, 5],
+  color: [0.4, 0.4, 0.4],
+  scale: [10, 10, 10],
+  shader: Basic,
+  rigid: true,
+  kinematic: true
 });
 
 const axis = new Axis({
@@ -108,9 +118,15 @@ const map = Data.objs.map((obj, i) => {
   });
 });
 
+function getAllComponents(component) {
+  return (component.components || [])
+    .concat((component.components || []).map(c => getAllComponents(c)).flat());
+}
+
 // RENDER
 let lastRender = 0;
 let delta;
+let entities;
 (function render(timestamp = 0) {
   delta = timestamp - lastRender;
 
@@ -123,9 +139,10 @@ let delta;
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   world.updateWorldMatrix();
-  world.components.forEach(item => {
+  entities = getAllComponents(world);
+  entities.forEach(item => {
+    if (item.physics) item.physics(delta, entities);
     if (item.update) item.update(delta);
-    if (item.updateComponents) item.updateComponents(delta);
     if (item.render) item.render({ camera });
   });
 
