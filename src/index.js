@@ -119,8 +119,9 @@ const map = Data.objs.map((obj, i) => {
 });
 
 function getAllComponents(component) {
-  return (component.components || [])
-    .concat((component.components || []).map(c => getAllComponents(c)).flat());
+  return (component.components || []).concat(
+    (component.components || []).map(c => getAllComponents(c)).flat()
+  );
 }
 
 // RENDER

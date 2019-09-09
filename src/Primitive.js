@@ -6,11 +6,9 @@ export class Node {
     translation = [0, 0, 0],
     rotation = [0, 0, 0],
     scale = [1, 1, 1],
-    components = [],
-    kinematic = false,
-    rigid = false,
-    complex = false
+    components = []
   } = {}) {
+    this.id = `${parseInt(Math.random() * 10000000)}${parseInt(Math.random() * 10000000)}`
     this.localMatrix = m4.identity();
     this.worldMatrix = m4.identity();
     this.components = components;
@@ -24,13 +22,6 @@ export class Node {
     }
 
     this.setMatrix();
-
-    // physics tracking
-    this.lastLocalMatrix = this.localMatrix;
-    this.kinematic = kinematic;
-    this.rigid = rigid;
-    this.complex = complex;
-    this.bbox = this.boundingBox();
   }
 
   setParent(p) {
@@ -57,71 +48,6 @@ export class Node {
     }
 
     this.components.forEach(c => c.render && c.render({ camera }));
-  }
-
-  intersects(other) {
-    let a = this.bbox;
-    let b = other.bbox;
-
-    return (a.min.x <= b.max.x && a.max.x >= b.min.x) &&
-         (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
-         (a.min.z <= b.max.z && a.max.z >= b.min.z);
-  }
-
-  boundingBox() {
-    console.log('new box!');
-    if (!this.data) return;
-
-    // Break each object into tri verts
-    let geom = this.data.slice(0);
-    let out = [];
-    let temp;
-    while ((temp = geom.splice(0, 3)).length !== 0) {
-      out.push([
-        temp[0],
-        temp[1],
-        temp[2]
-      ]);
-    }
-
-    let min = out[0];
-    let max = out[0];
-    out.forEach(([x, y, z]) => {
-      min[0] = Math.min(min[0], x);
-      min[1] = Math.min(min[1], y);
-      min[2] = Math.min(min[2], z);
-      max[0] = Math.max(max[0], x);
-      max[1] = Math.max(max[1], y);
-      max[2] = Math.max(max[2], z);
-    });
-
-    return {min, max};
-  }
-
-  physics(delta, objects) {
-    if (!this.rigid) return;
-
-    // If the localMatrix has changed, recalculate the bounding box
-    if (this.lastLocalMatrix != this.localMatrix) {
-      this.lastLocalMatrix = this.localMatrix;
-      this.bbox = this.boundingBox();
-    }
-
-    objects.forEach(other => {
-      if (this.intersects(other)) {
-        console.log('intersection!', this, other);
-      }
-    })
-
-    // Apply gravity to non-kinematic objects
-    if (!this.kinematic) {
-      this.localMatrix = m4.translate(this.localMatrix, 0, -9.8 * delta, 0);
-    }
-
-    // Update each child object.
-    this.components.forEach(c => {
-      c.physics && c.physics(delta);
-    });
   }
 
   update(delta) {}
@@ -158,9 +84,9 @@ export default ({ gl, Basic, Line }) => {
       parent,
       normals = [],
       components,
-      rigid,
-      kinematic,
-      complex
+      kinematic = false,
+      rigid = false,
+      complex = false
     } = {}) {
       super({
         parent,
@@ -199,6 +125,90 @@ export default ({ gl, Basic, Line }) => {
       this.vbo = vbo;
       this.vbo_color = vbo_color;
       this.vbo_normals = vbo_normals;
+
+      // physics tracking
+      this.lastLocalMatrix = this.localMatrix;
+      this.kinematic = kinematic;
+      this.rigid = rigid;
+      this.complex = complex;
+      this.bbox = this.boundingBox();
+    }
+
+    intersects(other) {
+      let a = this.bbox;
+      let b = other.bbox;
+
+      return (
+        a.min.x <= b.max.x &&
+        a.max.x >= b.min.x &&
+        (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
+        (a.min.z <= b.max.z && a.max.z >= b.min.z)
+      );
+    }
+
+    boundingBox() {
+      console.log('new box!');
+      if (!this.data) return;
+
+      // Break each object into tri verts
+      let geom = this.data.slice(0);
+      let out = [];
+      let temp;
+      while ((temp = geom.splice(0, 3)).length !== 0) {
+        out.push([temp[0], temp[1], temp[2]]);
+      }
+
+      let min = out[0];
+      let max = out[0];
+      out.forEach(([x, y, z]) => {
+        min[0] = Math.min(min[0], x);
+        min[1] = Math.min(min[1], y);
+        min[2] = Math.min(min[2], z);
+        max[0] = Math.max(max[0], x);
+        max[1] = Math.max(max[1], y);
+        max[2] = Math.max(max[2], z);
+      });
+
+      return {
+        min: {
+          x: min[0],
+          y: min[1],
+          z: min[2]
+        },
+        max: {
+          x: max[0],
+          y: max[1],
+          z: max[2]
+        }
+      };
+    }
+
+    physics(delta, objects) {
+      if (!this.rigid) return;
+
+      // If the localMatrix has changed, recalculate the bounding box
+      if (this.lastLocalMatrix != this.localMatrix) {
+        this.lastLocalMatrix = this.localMatrix;
+        this.bbox = this.boundingBox();
+      }
+
+      objects.filter(o => o.id !== this.id).forEach(other => {
+        if (!other.rigid) return;
+
+        if (this.intersects(other)) {
+          console.log('intersection!', this, other);
+        }
+      });
+
+      // Apply gravity to non-kinematic objects
+      if (!this.kinematic) {
+        this.localMatrix = m4.translate(this.localMatrix, 0, -0.001 * delta, 0);
+      }
+
+      // Update each child object.
+      this.components.forEach(c => {
+        c.physics && c.physics(delta);
+      });
     }
   }
 
