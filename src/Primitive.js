@@ -46,8 +46,6 @@ export class Node {
     if (this.shader) {
       this.shader.render(this, { camera });
     }
-
-    this.components.forEach(c => c.render && c.render({ camera }));
   }
 
   update(delta) {}
@@ -127,27 +125,33 @@ export default ({ gl, Basic, Line }) => {
       this.vbo_normals = vbo_normals;
 
       // physics tracking
-      this.lastLocalMatrix = this.localMatrix;
+      this._localMatrix = this.localMatrix;
+      this._worldMatrix = this.worldMatrix;
       this.kinematic = kinematic;
       this.rigid = rigid;
       this.complex = complex;
-      this.bbox = this.boundingBox();
+
+      // starting bounding box
+      this._boundingbox = this.getBoundingBox();
+      this.boundingbox = Object.assign({}, this._boundingbox);
     }
 
     intersects(other) {
-      let a = this.bbox;
-      let b = other.bbox;
+      let a = this.boundingbox;
+      let b = other.boundingbox;
+
+      let x = (a.min.x <= b.max.x && a.max.x >= b.min.x);
+      let y = (a.min.y <= b.max.y && a.max.y >= b.min.y);
+      let z = (a.min.z <= b.max.z && a.max.z >= b.min.z);
 
       return (
-        a.min.x <= b.max.x &&
-        a.max.x >= b.min.x &&
-        (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
-        (a.min.z <= b.max.z && a.max.z >= b.min.z)
+        x &&
+        y &&
+        z
       );
     }
 
-    boundingBox() {
-      console.log('new box!');
+    getBoundingBox() {
       if (!this.data) return;
 
       // Break each object into tri verts
@@ -158,8 +162,8 @@ export default ({ gl, Basic, Line }) => {
         out.push([temp[0], temp[1], temp[2]]);
       }
 
-      let min = out[0];
-      let max = out[0];
+      let min = [0, 0, 0];
+      let max = [0, 0, 0];
       out.forEach(([x, y, z]) => {
         min[0] = Math.min(min[0], x);
         min[1] = Math.min(min[1], y);
@@ -183,32 +187,49 @@ export default ({ gl, Basic, Line }) => {
       };
     }
 
+    updateBoundingBox([x, y, z]) {
+      let bb = Object.assign({}, this._boundingbox);
+      return {
+        min: {
+          x: x + bb.min.x,
+          y: y + bb.min.y,
+          z: z + bb.min.z
+        },
+        max: {
+          x: x + bb.max.x,
+          y: y + bb.max.y,
+          z: z + bb.max.z
+        }
+      };
+    }
+
     physics(delta, objects) {
       if (!this.rigid) return;
 
       // If the localMatrix has changed, recalculate the bounding box
-      if (this.lastLocalMatrix != this.localMatrix) {
-        this.lastLocalMatrix = this.localMatrix;
-        this.bbox = this.boundingBox();
+      if (this._worldMatrix != this.worldMatrix) {
+        this._worldMatrix = this.worldMatrix;
+        this.boundingbox = this.updateBoundingBox(
+          m4.getTranslation(this.worldMatrix)
+        );
       }
 
+      let colliding = false;
       objects.filter(o => o.id !== this.id).forEach(other => {
         if (!other.rigid) return;
 
+        // If theres an intersection, rollback the last update.
         if (this.intersects(other)) {
+          this.localMatrix = this._localMatrix;
+          colliding = true;
           console.log('intersection!', this, other);
         }
       });
 
       // Apply gravity to non-kinematic objects
-      if (!this.kinematic) {
+      if (!this.kinematic && !colliding) {
         this.localMatrix = m4.translate(this.localMatrix, 0, -0.001 * delta, 0);
       }
-
-      // Update each child object.
-      this.components.forEach(c => {
-        c.physics && c.physics(delta);
-      });
     }
   }
 

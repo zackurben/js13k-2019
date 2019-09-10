@@ -22,7 +22,7 @@ const { Basic, MultiColored, Line, Lighted } = Shaders(gl);
 const { Node, Cube, Plane, Axis } = Primitive({ Basic, Line });
 const world = new Node();
 const camera = new Camera({
-  translation: [0, 2, 4],
+  translation: [0, 2, 6],
   rotation: [0, 0, 0],
   aspect: gl.canvas.clientWidth / gl.canvas.clientHeight
 });
@@ -30,9 +30,15 @@ const input = Input({ canvas });
 const player = new Player({
   parent: world,
   components: [camera, input],
-  translation: [0, 0, 5],
+  translation: [0, -3, 8],
   rotation: [0, 0, 0]
 });
+const pDisplay = new Cube({
+  parent: player,   
+  translation: [0, 0, 0],
+  rigid: true,
+  kinematic: true
+})
 
 input.update = delta => {
   const _rspeed = input.viewSpeed * (delta / 1000);
@@ -59,24 +65,24 @@ const primary = new Cube({
   translation: [1, 0, 0],
   color: [1, 1, 1],
   shader: Lighted,
-  scale: [0.5, 0.5, 0.5],
+  scale: [1, 1, 1],
   rigid: true,
   update(delta) {
     this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
   }
 });
-const secondary = new Cube({
-  parent: primary,
-  translation: [1, 1, -1],
-  color: [0.9, 0.7, 0.3],
-  scale: [0.5, 0.5, 0.5],
-  shader: Lighted,
-  update(delta) {
-    this.localMatrix = m4.yRotate(this.localMatrix, -delta / 1000);
-    this.localMatrix = m4.xRotate(this.localMatrix, -delta / 1000);
-    this.localMatrix = m4.zRotate(this.localMatrix, -delta / 1000);
-  }
-});
+// const secondary = new Cube({
+//   parent: primary,
+//   translation: [1, 1, -1],
+//   color: [0.9, 0.7, 0.3],
+//   scale: [0.5, 0.5, 0.5],
+//   shader: Lighted,
+//   update(delta) {
+//     this.localMatrix = m4.yRotate(this.localMatrix, -delta / 1000);
+//     this.localMatrix = m4.xRotate(this.localMatrix, -delta / 1000);
+//     this.localMatrix = m4.zRotate(this.localMatrix, -delta / 1000);
+//   }
+// });
 const ground = new Plane({
   parent: world,
   translation: [0, -3, 5],
@@ -92,31 +98,31 @@ const axis = new Axis({
   scale: [10, 10, 10]
 });
 
-const map = Data.objs.map((obj, i) => {
-  let { type, faces, color, normals: normal } = obj;
-  const { data, normals, translation } = Triangulation(
-    faces,
-    Data.vertices,
-    normal
-  );
+// const map = Data.objs.map((obj, i) => {
+//   let { type, faces, color, normals: normal } = obj;
+//   const { data, normals, translation } = Triangulation(
+//     faces,
+//     Data.vertices,
+//     normal
+//   );
 
-  return new types[type]({
-    parent: world,
-    data,
-    translation,
-    scale: [0.5, 0.5, 0.5],
-    normals,
-    color,
-    shader: normals && normals.length !== 0 ? Lighted : Basic,
-    update(delta) {
-      if (i !== 0) {
-        return;
-      }
+//   return new types[type]({
+//     parent: world,
+//     data,
+//     translation,
+//     scale: [0.5, 0.5, 0.5],
+//     normals,
+//     color,
+//     shader: normals && normals.length !== 0 ? Lighted : Basic,
+//     update(delta) {
+//       if (i !== 0) {
+//         return;
+//       }
 
-      this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
-    }
-  });
-});
+//       this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
+//     }
+//   });
+// });
 
 function getAllComponents(component) {
   return (component.components || []).concat(
@@ -128,6 +134,7 @@ function getAllComponents(component) {
 let lastRender = 0;
 let delta;
 let entities;
+let phys = false;
 (function render(timestamp = 0) {
   delta = timestamp - lastRender;
 
@@ -142,9 +149,12 @@ let entities;
   world.updateWorldMatrix();
   entities = getAllComponents(world);
   entities.forEach(item => {
-    if (item.physics) item.physics(delta, entities);
+    if (item.localMatrix) item._localMatrix = item.localMatrix.slice(0);
     if (item.update) item.update(delta);
+    if (phys && item.physics) item.physics(delta, entities);
     if (item.render) item.render({ camera });
+
+    phys = true;
   });
 
   if (fps) {
@@ -155,6 +165,8 @@ let entities;
     fps: ${FPS.get()}
     world world: ${displayMat(world.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
+    ground bb: ${JSON.stringify(ground.boundingbox)}
+    player bb: ${JSON.stringify(pDisplay.boundingbox)}
     `;
   }
   lastRender = timestamp;
