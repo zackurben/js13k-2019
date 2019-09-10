@@ -54,6 +54,50 @@ let types = {
   Plane
 };
 
+let obstacles = [];
+let pickups = [];
+function generateItem(collection) {
+  let parent = new Node({
+    parent: world,
+    translation: [
+      (Math.random() * 10) - 5,
+      1,
+      -100
+    ]
+  });
+
+  parent.update = (delta) => {
+    parent.localMatrix = m4.translate(parent.localMatrix, 0, 0, delta / 100)
+  }
+
+  let child = new Cube({
+    parent,
+    translation: [0, 0, 0]
+  })
+
+  collection.push(parent)
+}
+
+function trimItems(collection) {
+  let skip = false;
+  let pos;
+  return collection.filter(item => {
+    if (skip) return true;
+
+    pos = m4.getTranslation(item.localMatrix)
+    if (pos[2] <= 10) {
+      skip = true;
+      return item;
+    }
+
+    world.removeComponent(item);
+    return false;
+  });
+}
+
+generateItem(obstacles);
+generateItem(obstacles);
+
 const n = new Node({
   translation: [0, 0, -10],
   parent: world
@@ -63,47 +107,50 @@ n.update = (delta) => {
   n.localMatrix = m4.translate(n.localMatrix, 0, 0, delta/1000);
 }
 
-const primary = new Cube({
-  parent: n,
-  translation: [0, 0, -5],
-  color: [1, 1, 1],
-  shader: Lighted,
-  scale: [1, 1, 1],
-  update(delta) {
-    this.localMatrix = m4.multiply(this.localMatrix, m4.yRotation(delta / 1000));
-    // this.localMatrix = m4.translate(this.localMatrix, 0, 0, delta / 1000);
-  }
-});
-const secondary = new Cube({
-  parent: primary,
-  translation: [1, 1, -1],
-  color: [0.9, 0.7, 0.3],
-  scale: [0.5, 0.5, 0.5],
-  shader: Lighted,
-  update(delta) {
-    this.localMatrix = m4.yRotate(this.localMatrix, -delta / 1000);
-    this.localMatrix = m4.xRotate(this.localMatrix, -delta / 1000);
-    this.localMatrix = m4.zRotate(this.localMatrix, -delta / 1000);
-  }
-});
+// const primary = new Cube({
+//   parent: n,
+//   translation: [0, 0, -5],
+//   color: [1, 1, 1],
+//   shader: Lighted,
+//   scale: [1, 1, 1],
+//   update(delta) {
+//     this.localMatrix = m4.multiply(this.localMatrix, m4.yRotation(delta / 1000));
+//     // this.localMatrix = m4.translate(this.localMatrix, 0, 0, delta / 1000);
+//   }
+// });
+// const secondary = new Cube({
+//   parent: primary,
+//   translation: [1, 1, -1],
+//   color: [0.9, 0.7, 0.3],
+//   scale: [0.5, 0.5, 0.5],
+//   shader: Lighted,
+//   update(delta) {
+//     this.localMatrix = m4.yRotate(this.localMatrix, -delta / 1000);
+//     this.localMatrix = m4.xRotate(this.localMatrix, -delta / 1000);
+//     this.localMatrix = m4.zRotate(this.localMatrix, -delta / 1000);
+//   }
+// });
 
-// const floor = new Plane({
-//   parent: world,
-//   translation: [0, 0, -220],
-//   scale: [6, 1, 500]
-// })
-// const rWall = new Plane({
-//   parent: world,
-//   translation: [-3.5, 1, -220],
-//   rotation: [0, 0, -1],
-//   scale: [3, 3, 500]
-// })
-// const lWall = new Plane({
-//   parent: world,
-//   translation: [3.5, 1, -220],
-//   rotation: [0, 0, 1],
-//   scale: [3, 3, 500]
-// })
+const floor = new Plane({
+  parent: world,
+  translation: [0, 0, -220],
+  scale: [10, 1, 500],
+  color: [0.7, 0.7, 0.7]
+})
+const rWall = new Plane({
+  parent: world,
+  translation: [-5, 1, -220],
+  rotation: [0, 0, -1],
+  scale: [2, 3, 500],
+  color: [0.3, 0.3, 0.3]
+})
+const lWall = new Plane({
+  parent: world,
+  translation: [5, 1, -220],
+  rotation: [0, 0, 1],
+  scale: [2, 3, 500],
+  color: [0.3, 0.3, 0.3]
+})
 
 const axis = new Axis({
   parent: world,
@@ -155,6 +202,9 @@ let delta;
     if (item.update) item.update(delta);
     if (item.updateComponents) item.updateComponents(delta);
     if (item.render) item.render({ camera });
+
+    obstacles = trimItems(obstacles);
+    pickups = trimItems(pickups);
   });
 
   if (fps) {
@@ -165,7 +215,8 @@ let delta;
     fps: ${FPS.get()}
     world world: ${displayMat(world.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
-    primary world: ${displayMat(primary.worldMatrix)}
+    obstacles: ${obstacles.length}
+    pickups: ${pickups.length}
     `;
   }
   lastRender = timestamp;
