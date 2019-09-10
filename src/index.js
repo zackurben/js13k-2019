@@ -77,9 +77,22 @@ const secondary = new Cube({
   }
 });
 
-const p = new Plane({
+const floor = new Plane({
   parent: world,
-  translation: [0,0,0]
+  translation: [0, 0, -220],
+  scale: [6, 1, 500]
+})
+const rWall = new Plane({
+  parent: world,
+  translation: [-3.5, 1, -220],
+  rotation: [0, 0, -1],
+  scale: [3, 3, 500]
+})
+const lWall = new Plane({
+  parent: world,
+  translation: [3.5, 1, -220],
+  rotation: [0, 0, 1],
+  scale: [3, 3, 500]
 })
 
 const axis = new Axis({
