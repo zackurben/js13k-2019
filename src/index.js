@@ -77,6 +77,11 @@ const secondary = new Cube({
   }
 });
 
+const p = new Plane({
+  parent: world,
+  translation: [0,0,0]
+})
+
 const axis = new Axis({
   parent: world,
   scale: [10, 10, 10]
