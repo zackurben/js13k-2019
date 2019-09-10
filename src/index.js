@@ -54,14 +54,24 @@ let types = {
   Plane
 };
 
+const n = new Node({
+  translation: [0, 0, -10],
+  parent: world
+})
+
+n.update = (delta) => {
+  n.localMatrix = m4.translate(n.localMatrix, 0, 0, delta/1000);
+}
+
 const primary = new Cube({
-  parent: world,
-  translation: [1, 0, 0],
+  parent: n,
+  translation: [0, 0, -5],
   color: [1, 1, 1],
   shader: Lighted,
-  scale: [0.5, 0.5, 0.5],
+  scale: [1, 1, 1],
   update(delta) {
-    this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
+    this.localMatrix = m4.multiply(this.localMatrix, m4.yRotation(delta / 1000));
+    // this.localMatrix = m4.translate(this.localMatrix, 0, 0, delta / 1000);
   }
 });
 const secondary = new Cube({
@@ -77,23 +87,23 @@ const secondary = new Cube({
   }
 });
 
-const floor = new Plane({
-  parent: world,
-  translation: [0, 0, -220],
-  scale: [6, 1, 500]
-})
-const rWall = new Plane({
-  parent: world,
-  translation: [-3.5, 1, -220],
-  rotation: [0, 0, -1],
-  scale: [3, 3, 500]
-})
-const lWall = new Plane({
-  parent: world,
-  translation: [3.5, 1, -220],
-  rotation: [0, 0, 1],
-  scale: [3, 3, 500]
-})
+// const floor = new Plane({
+//   parent: world,
+//   translation: [0, 0, -220],
+//   scale: [6, 1, 500]
+// })
+// const rWall = new Plane({
+//   parent: world,
+//   translation: [-3.5, 1, -220],
+//   rotation: [0, 0, -1],
+//   scale: [3, 3, 500]
+// })
+// const lWall = new Plane({
+//   parent: world,
+//   translation: [3.5, 1, -220],
+//   rotation: [0, 0, 1],
+//   scale: [3, 3, 500]
+// })
 
 const axis = new Axis({
   parent: world,
@@ -155,6 +165,7 @@ let delta;
     fps: ${FPS.get()}
     world world: ${displayMat(world.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
+    primary world: ${displayMat(primary.worldMatrix)}
     `;
   }
   lastRender = timestamp;

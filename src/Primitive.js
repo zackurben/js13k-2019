@@ -6,7 +6,7 @@ export class Node {
     translation = [0, 0, 0],
     rotation = [0, 0, 0],
     scale = [1, 1, 1],
-    components = []
+    components = [],
   } = {}) {
     this.localMatrix = m4.identity();
     this.worldMatrix = m4.identity();

@@ -58,6 +58,12 @@ export default ({
       if (keys[down]) {
         y = -1;
       }
+      if (keys[right]) {
+        x = 1;
+      }
+      if (keys[left]) {
+        x = -1;
+      }
       if (keys[pause]) {
         if (!paused) {
           paused = true;
@@ -72,13 +78,6 @@ export default ({
       let x = 0;
       let y = 0;
       let z = 0;
-
-      if (keys[right]) {
-        y = -1;
-      }
-      if (keys[left]) {
-        y = 1;
-      }
 
       return [x, y, z];
     },

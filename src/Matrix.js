@@ -324,8 +324,49 @@ export default {
     return [sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, sz, 0, 0, 0, 0, 1];
   },
 
-  translate: function(m, tx, ty, tz) {
-    return this.multiply(m, this.translation(tx, ty, tz));
+  translate(m, tx, ty, tz, dst) {
+    // This is the optimized version of
+    // return multiply(m, translation(tx, ty, tz), dst);
+    dst = dst || new Float32Array(16);
+
+    var m00 = m[0];
+    var m01 = m[1];
+    var m02 = m[2];
+    var m03 = m[3];
+    var m10 = m[1 * 4 + 0];
+    var m11 = m[1 * 4 + 1];
+    var m12 = m[1 * 4 + 2];
+    var m13 = m[1 * 4 + 3];
+    var m20 = m[2 * 4 + 0];
+    var m21 = m[2 * 4 + 1];
+    var m22 = m[2 * 4 + 2];
+    var m23 = m[2 * 4 + 3];
+    var m30 = m[3 * 4 + 0];
+    var m31 = m[3 * 4 + 1];
+    var m32 = m[3 * 4 + 2];
+    var m33 = m[3 * 4 + 3];
+
+    if (m !== dst) {
+      dst[ 0] = m00;
+      dst[ 1] = m01;
+      dst[ 2] = m02;
+      dst[ 3] = m03;
+      dst[ 4] = m10;
+      dst[ 5] = m11;
+      dst[ 6] = m12;
+      dst[ 7] = m13;
+      dst[ 8] = m20;
+      dst[ 9] = m21;
+      dst[10] = m22;
+      dst[11] = m23;
+    }
+
+    dst[12] = m00 * tx + m10 * ty + m20 * tz + m30;
+    dst[13] = m01 * tx + m11 * ty + m21 * tz + m31;
+    dst[14] = m02 * tx + m12 * ty + m22 * tz + m32;
+    dst[15] = m03 * tx + m13 * ty + m23 * tz + m33;
+
+    return dst;
   },
 
   xRotate: function(m, angleInRadians) {
