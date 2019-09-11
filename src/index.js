@@ -11,6 +11,8 @@ import { radToDisplayDeg, displayMat } from './Util';
 import Input from './Input';
 import m4 from './Matrix';
 
+let RANDOM_SPEED = 1;
+let boost = 500;
 const canvas = document.querySelector('canvas');
 const fps = document.querySelector('div');
 const gl = canvas.getContext('webgl2');
@@ -49,33 +51,33 @@ input.update = delta => {
 const FPS = new StatCache();
 const DRAW = new StatCache();
 
-let types = {
-  Cube,
-  Plane
-};
-
 let obstacles = [];
 let pickups = [];
-function generateItem(collection) {
+let boosts = [];
+function generateItem(collection, cargs) {
   let parent = new Node({
     parent: world,
     translation: [
-      (Math.random() * 10) - 5,
+      (Math.random() * 9) - 4.5,
       1,
       -100
     ]
   });
 
+  let speed = RANDOM_SPEED ? 50 + Math.random() * 50 : 100;
   parent.update = (delta) => {
-    parent.localMatrix = m4.translate(parent.localMatrix, 0, 0, delta / 100)
+    parent.localMatrix = m4.translate(parent.localMatrix, 0, 0, delta / (boost>0 ? speed/2 : speed))
   }
 
   let child = new Cube({
     parent,
-    translation: [0, 0, 0]
+    translation: [0, 0, 0],
+    shader: Lighted,
+    ...cargs
   })
 
   collection.push(parent)
+  return parent;
 }
 
 function trimItems(collection) {
@@ -95,8 +97,49 @@ function trimItems(collection) {
   });
 }
 
-generateItem(obstacles);
-generateItem(obstacles);
+function random(target, cb) {
+  let val = Math.random() ? Math.random() : Math.random();
+  if (val < target) {
+    return cb()
+  }
+}
+
+function updateBoost(delta) {
+  if (boost > 0) {
+    boost -= delta;
+  }
+  else {
+    boost = 0;
+  }
+}
+
+function repeat(item, num) {
+  let out = [];
+  for (let i = 0; i < num; i++) {
+    out = out.concat(item)
+  }
+
+  return out.flat();
+}
+
+let oarg = {color: repeat([1, 0, 0, 1], 36)}
+let parg = {color: repeat([0, 1, 0, 1], 36), scale: [0.5, 0.5, 0.5]}
+let barg = {color: repeat([1, 1, 0, 1], 36), scale: [0.3, 0.3, 0.3]}
+let bOdds = 0;
+let oOdds = 0;
+let pOdds = 0;
+let multiplier = 1;
+function generator(time) {
+  multiplier = 1 + (0.2 * (time / 30000))
+  
+  bOdds = .002 * multiplier;
+  oOdds = .004 * multiplier;
+  pOdds = .004 * multiplier;
+  
+  random(pOdds, () => generateItem(pickups, parg)) ||
+  random(oOdds, () => generateItem(obstacles, oarg)) ||
+  random(bOdds, () => generateItem(boosts, barg))
+}
 
 const n = new Node({
   translation: [0, 0, -10],
@@ -106,30 +149,6 @@ const n = new Node({
 n.update = (delta) => {
   n.localMatrix = m4.translate(n.localMatrix, 0, 0, delta/1000);
 }
-
-// const primary = new Cube({
-//   parent: n,
-//   translation: [0, 0, -5],
-//   color: [1, 1, 1],
-//   shader: Lighted,
-//   scale: [1, 1, 1],
-//   update(delta) {
-//     this.localMatrix = m4.multiply(this.localMatrix, m4.yRotation(delta / 1000));
-//     // this.localMatrix = m4.translate(this.localMatrix, 0, 0, delta / 1000);
-//   }
-// });
-// const secondary = new Cube({
-//   parent: primary,
-//   translation: [1, 1, -1],
-//   color: [0.9, 0.7, 0.3],
-//   scale: [0.5, 0.5, 0.5],
-//   shader: Lighted,
-//   update(delta) {
-//     this.localMatrix = m4.yRotate(this.localMatrix, -delta / 1000);
-//     this.localMatrix = m4.xRotate(this.localMatrix, -delta / 1000);
-//     this.localMatrix = m4.zRotate(this.localMatrix, -delta / 1000);
-//   }
-// });
 
 const floor = new Plane({
   parent: world,
@@ -157,37 +176,12 @@ const axis = new Axis({
   scale: [10, 10, 10]
 });
 
-const map = Data.objs.map((obj, i) => {
-  let { type, faces, color, normals: normal } = obj;
-  const { data, normals, translation } = Triangulation(
-    faces,
-    Data.vertices,
-    normal
-  );
-
-  return new types[type]({
-    parent: world,
-    data,
-    translation,
-    scale: [0.5, 0.5, 0.5],
-    normals,
-    color,
-    shader: normals && normals.length !== 0 ? Lighted : Basic,
-    update(delta) {
-      if (i !== 0) {
-        return;
-      }
-
-      this.localMatrix = m4.yRotate(this.localMatrix, delta / 1000);
-    }
-  });
-});
-
 // RENDER
 let lastRender = 0;
 let delta;
 (function render(timestamp = 0) {
   delta = timestamp - lastRender;
+  updateBoost(delta/10);
 
   // Define the viewport dimensions.
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -202,10 +196,12 @@ let delta;
     if (item.update) item.update(delta);
     if (item.updateComponents) item.updateComponents(delta);
     if (item.render) item.render({ camera });
-
-    obstacles = trimItems(obstacles);
-    pickups = trimItems(pickups);
   });
+
+  obstacles = trimItems(obstacles);
+  pickups = trimItems(pickups);
+  boosts = trimItems(boosts);
+  generator(timestamp);
 
   if (fps) {
     FPS.add(1000 / delta);
@@ -217,6 +213,13 @@ let delta;
     player world: ${displayMat(player.worldMatrix)}
     obstacles: ${obstacles.length}
     pickups: ${pickups.length}
+    boosts: ${boosts.length}
+    time: ${parseInt(timestamp / 1000)}
+    boost: ${parseInt(boost)}
+    multiplier: ${multiplier}
+    bOdds: ${bOdds}
+    oOdds: ${oOdds}
+    pOdds: ${pOdds}
     `;
   }
   lastRender = timestamp;
