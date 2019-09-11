@@ -1,5 +1,6 @@
 'use strict';
 
+import '../main.css';
 import StatCache from './StatCache';
 import Primitive from './Primitive';
 import Player from './Player';
@@ -14,7 +15,7 @@ import m4 from './Matrix';
 let RANDOM_SPEED = 1;
 let boost = 500;
 const canvas = document.querySelector('canvas');
-const fps = document.querySelector('div');
+const fps = document.querySelector('div#stats');
 const gl = canvas.getContext('webgl2');
 if (!gl) {
   console.error('no gl context');
@@ -35,6 +36,12 @@ const player = new Player({
   translation: [0, 0, 0],
   rotation: [0, 0, 0]
 });
+const playerRender = new Cube({
+  parent: player,
+  shader: Lighted,
+  translation: [0, 0, 0],
+  color: repeat([0.3, 0.1, 0.2, 1], 36)
+})
 
 input.update = delta => {
   const _rspeed = input.viewSpeed * (delta / 1000);
@@ -59,7 +66,7 @@ function generateItem(collection, cargs) {
     parent: world,
     translation: [
       (Math.random() * 9) - 4.5,
-      1,
+      0.5,
       -100
     ]
   });
@@ -130,7 +137,7 @@ let oOdds = 0;
 let pOdds = 0;
 let multiplier = 1;
 function generator(time) {
-  multiplier = 1 + (0.2 * (time / 30000))
+  multiplier = (boost > 0 ? 2 : 1) + (0.3 * (time / 30000))
   
   bOdds = .002 * multiplier;
   oOdds = .004 * multiplier;
