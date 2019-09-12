@@ -8,7 +8,7 @@ import Shaders from './shaders';
 import Camera from './Camera';
 import Data from '../data/data.json';
 import Triangulation from './Triangulator';
-import { radToDisplayDeg, displayMat, formatTime } from './Util';
+import { radToDisplayDeg, displayMat, formatTime, storeScore, getScore } from './Util';
 import Input from './Input';
 import m4 from './Matrix';
 
@@ -29,6 +29,8 @@ const el = i => document.querySelector(i);
 const canvas = el('canvas');
 const debug = el('#debug');
 const time = el('#time');
+const oldScore = el('#old');
+const newScore = el('#new');
 const gl = canvas.getContext('webgl2');
 if (!gl) {
   console.error('no gl context');
@@ -46,7 +48,7 @@ const input = Input({ canvas });
 const player = new Player({
   parent: world,
   components: [camera, input],
-  translation: [0, 0, 0],
+  translation: [0, 0.5, 0],
   rotation: [0, 0, 0]
 });
 const playerRender = new Cube({
@@ -78,7 +80,7 @@ playerRender.physics = (delta, objects) => {
       } else if (other.tag.startsWith('pickup')) {
         pickupMultiplier += 0.1;
         pickupCountdown = PICKUP_TIME;
-        points += PICKUP_POINTS * pickupMultiplier;
+        points = parseInt(points + (PICKUP_POINTS * pickupMultiplier));
         world.removeComponent(other.parent);
       } else if (other.tag.startsWith('boosts')) {
         boost += BOOST_TIME;
@@ -252,7 +254,6 @@ const lWall = new Plane({
   scale: [2, 3, 500],
   color: [0.3, 0.3, 0.3]
 });
-
 const axis = new Axis({
   parent: world,
   scale: [10, 10, 10]
@@ -263,7 +264,7 @@ let lastRender = 0;
 let delta;
 let entities;
 (function render(timestamp = 0) {
-  if (!running) return;
+  if (!running) return storeScore(points);
 
   delta = timestamp - lastRender;
 
@@ -315,6 +316,9 @@ let entities;
     time.innerText = `${formatTime(parseInt(timestamp / 60000))}:${formatTime(
       parseInt(timestamp / 1000) % 60
     )}:${formatTime(parseInt(timestamp) % 100)}`;
+
+    oldScore.innerText = `Top: ${points}`;
+    newScore.innerText = `Score: ${points}`;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);

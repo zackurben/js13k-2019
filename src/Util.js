@@ -39,3 +39,21 @@ export function formatTime(i) {
   i = i.toString();
   return `${i.length === 1 ? `0${i}` : i}`;
 }
+
+export function storeScore(score) {
+  try {
+    localStorage.setItem('score', score);
+  }
+  catch (e) {
+    return score;
+  }
+}
+
+export function getScore() {
+  try {
+    return localStorage.getItem('score');
+  }
+  catch (e) {
+    return 0;
+  }
+}

@@ -33,6 +33,14 @@ body {
   font-size: 4em;
 }
 
+#old, #new {
+  right: 0;
+  top: 0;
+  position: absolute;
+  padding: 10px;
+  font-size: 2em;
+}
+
 #debug {
   padding: 10px;
 }
