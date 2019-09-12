@@ -2,6 +2,14 @@ body {
   margin: 0
 }
 
+.hide {
+  display: none;
+}
+
+.show {
+  display: block;
+}
+
 #stats {
   top: 0;
   position: absolute;

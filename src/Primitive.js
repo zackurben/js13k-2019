@@ -10,7 +10,9 @@ export class Node {
     data = [],
     normals = []
   } = {}) {
-    this.id = `${parseInt(Math.random() * 10000000)}${parseInt(Math.random() * 10000000)}`
+    this.id = `${parseInt(Math.random() * 10000000)}${parseInt(
+      Math.random() * 10000000
+    )}`;
     this.localMatrix = m4.identity();
     this.worldMatrix = m4.identity();
     this.components = components;
@@ -39,15 +41,11 @@ export class Node {
     let a = this.boundingbox;
     let b = other.boundingbox;
 
-    let x = (a.min.x <= b.max.x && a.max.x >= b.min.x);
-    let y = (a.min.y <= b.max.y && a.max.y >= b.min.y);
-    let z = (a.min.z <= b.max.z && a.max.z >= b.min.z);
+    let x = a.min.x <= b.max.x && a.max.x >= b.min.x;
+    let y = a.min.y <= b.max.y && a.max.y >= b.min.y;
+    let z = a.min.z <= b.max.z && a.max.z >= b.min.z;
 
-    return (
-      x &&
-      y &&
-      z
-    );
+    return x && y && z;
   }
 
   getBoundingBox() {
@@ -165,7 +163,15 @@ export default ({ gl, Basic, Line }) => {
       normals,
       components
     } = {}) {
-      super({ parent, components, translation, rotation, scale, data, normals });
+      super({
+        parent,
+        components,
+        translation,
+        rotation,
+        scale,
+        data,
+        normals
+      });
 
       this.color = color;
       if (this.color.length === 3) {

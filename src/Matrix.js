@@ -347,16 +347,16 @@ export default {
     var m33 = m[3 * 4 + 3];
 
     if (m !== dst) {
-      dst[ 0] = m00;
-      dst[ 1] = m01;
-      dst[ 2] = m02;
-      dst[ 3] = m03;
-      dst[ 4] = m10;
-      dst[ 5] = m11;
-      dst[ 6] = m12;
-      dst[ 7] = m13;
-      dst[ 8] = m20;
-      dst[ 9] = m21;
+      dst[0] = m00;
+      dst[1] = m01;
+      dst[2] = m02;
+      dst[3] = m03;
+      dst[4] = m10;
+      dst[5] = m11;
+      dst[6] = m12;
+      dst[7] = m13;
+      dst[8] = m20;
+      dst[9] = m21;
       dst[10] = m22;
       dst[11] = m23;
     }
