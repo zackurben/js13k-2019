@@ -1,3 +1,7 @@
+* {
+  font-family: monospace;
+}
+
 body {
   margin: 0;
   display: flex;
@@ -14,9 +18,21 @@ body {
   display: none;
 }
 
-#stats {
+#stats, #debug {
   top: 0;
   position: absolute;
-  padding: 10px;
   color: white;
+}
+
+#stats {
+  width: 100%;
+}
+
+#time {
+  text-align: center;
+  font-size: 4em;
+}
+
+#debug {
+  padding: 10px;
 }

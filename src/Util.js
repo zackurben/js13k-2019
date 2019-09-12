@@ -34,3 +34,8 @@ export function displayMat(mat) {
         .join(', ')}
   `;
 }
+
+export function formatTime(i) {
+  i = i.toString();
+  return `${i.length === 1 ? `0${i}` : i}`;
+}

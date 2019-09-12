@@ -8,7 +8,7 @@ import Shaders from './shaders';
 import Camera from './Camera';
 import Data from '../data/data.json';
 import Triangulation from './Triangulator';
-import { radToDisplayDeg, displayMat } from './Util';
+import { radToDisplayDeg, displayMat, formatTime } from './Util';
 import Input from './Input';
 import m4 from './Matrix';
 
@@ -25,8 +25,10 @@ let pickupCountdown = 0;
 let pickupMultiplier = 0;
 let boost = 0;
 
-const canvas = document.querySelector('canvas');
-const fps = document.querySelector('div#stats');
+const el = i => document.querySelector(i);
+const canvas = el('canvas');
+const debug = el('#debug');
+const time = el('#time');
 const gl = canvas.getContext('webgl2');
 if (!gl) {
   console.error('no gl context');
@@ -109,9 +111,7 @@ input.update = delta => {
   let { Escape } = input.getKeys();
   if (debounceStats < 0 && Escape) {
     debounceStats = 250;
-    document
-      .getElementById('stats')
-      .classList.toggle('hide')
+    el('#debug').classList.toggle('hide');
   }
 
   debounceStats -= delta;
@@ -293,11 +293,11 @@ let entities;
   gameobjects[boosts] = trimItems('boosts');
   generator(timestamp);
 
-  if (fps) {
+  if (debug) {
     FPS.add(1000 / delta);
     DRAW.add(delta);
 
-    fps.innerText = `frame ms: ${DRAW.get()}
+    debug.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
     world world: ${displayMat(world.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
@@ -305,12 +305,16 @@ let entities;
     pickups: ${gameobjects[pickups].length}
     boosts: ${gameobjects[boosts].length}
     running: ${running}
-    time: ${parseInt(timestamp / 1000)}
+    time: parseInt(timestamp / 1000)
     boost: ${parseInt(boost)}
     multiplier: ${pickupMultiplier}
     pickup countdown: ${pickupCountdown}
     points: ${points}
     `;
+
+    time.innerText = `${formatTime(parseInt(timestamp / 60000))}:${formatTime(
+      parseInt(timestamp / 1000) % 60
+    )}:${formatTime(parseInt(timestamp) % 100)}`;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);
