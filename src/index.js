@@ -8,7 +8,7 @@ import Shaders from './shaders';
 import Camera from './Camera';
 import Data from '../data/data.json';
 import Triangulation from './Triangulator';
-import { radToDisplayDeg, displayMat, formatTime, storeScore, getScore } from './Util';
+import { radToDisplayDeg, displayMat, formatTime, storeScore, getScore, getAllComponents, repeat, random, calculateBB, el } from './Util';
 import Input from './Input';
 import m4 from './Matrix';
 
@@ -25,7 +25,6 @@ let pickupCountdown = 0;
 let pickupMultiplier = 0;
 let boost = 0;
 
-const el = i => document.querySelector(i);
 const canvas = el('canvas');
 const debug = el('#debug');
 const time = el('#time');
@@ -91,16 +90,6 @@ playerRender.physics = (delta, objects) => {
       }
     });
 };
-
-function calculateBB(item) {
-  // If the localMatrix has changed, recalculate the bounding box
-  if (item._worldMatrix != item.worldMatrix) {
-    item._worldMatrix = item.worldMatrix;
-    item.boundingbox = item.updateBoundingBox(
-      m4.getTranslation(item.worldMatrix)
-    );
-  }
-}
 
 input.update = delta => {
   const _rspeed = input.viewSpeed * (delta / 1000);
@@ -180,13 +169,6 @@ function trimItems(collection) {
   });
 }
 
-function random(target, cb) {
-  let val = Math.random() ? Math.random() : Math.random();
-  if (val < target) {
-    return cb();
-  }
-}
-
 function updateBoost(delta) {
   if (boost > 0) {
     boost -= delta;
@@ -201,21 +183,6 @@ function updatePickupStats(delta) {
   } else {
     pickupMultiplier = 1;
   }
-}
-
-function repeat(item, num) {
-  let out = [];
-  for (let i = 0; i < num; i++) {
-    out = out.concat(item);
-  }
-
-  return out.flat();
-}
-
-function getAllComponents(component) {
-  return (component.components || []).concat(
-    (component.components || []).map(c => getAllComponents(c)).flat()
-  );
 }
 
 function endGame(points) {

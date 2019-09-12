@@ -1,3 +1,5 @@
+import m4 from './Matrix';
+
 export function radToDeg(r) {
   return (r * 180) / Math.PI;
 }
@@ -56,4 +58,40 @@ export function getScore() {
   catch (e) {
     return 0;
   }
+}
+
+export function getAllComponents(component) {
+  return (component.components || []).concat(
+    (component.components || []).map(c => getAllComponents(c)).flat()
+  );
+}
+
+export function repeat(item, num) {
+  let out = [];
+  for (let i = 0; i < num; i++) {
+    out = out.concat(item);
+  }
+
+  return out.flat();
+}
+
+export function random(target, cb) {
+  let val = Math.random() ? Math.random() : Math.random();
+  if (val < target) {
+    return cb();
+  }
+}
+
+export function calculateBB(item) {
+  // If the localMatrix has changed, recalculate the bounding box
+  if (item._worldMatrix != item.worldMatrix) {
+    item._worldMatrix = item.worldMatrix;
+    item.boundingbox = item.updateBoundingBox(
+      m4.getTranslation(item.worldMatrix)
+    );
+  }
+}
+
+export function el(i) {
+  return document.querySelector(i);
 }
