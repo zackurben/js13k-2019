@@ -23,19 +23,25 @@ import {
 import Input from './Input';
 import m4 from './Matrix';
 
-// CONFIG
+const FPS = new StatCache();
+const DRAW = new StatCache();
+
+// GAME CONFIGS
 const RANDOM_SPEED = 1;
 const PICKUP_POINTS = 100;
 const PICKUP_TIME = 100;
 const BOOST_TIME = 200;
 
+// GAME VARIABLES
 let debounceStats = 0;
-let running = true;
-let points = getScore();
-let pickupCountdown = 0;
-let pickupMultiplier = 0;
-let boost = 0;
+let running; // = true;
+let highScore; // = getScore();
+let points; // = 0;
+let pickupCountdown; // = 0;
+let pickupMultiplier; // = 0;
+let boost; // = 0;
 
+// LAYOUT ELEMENTS
 const canvas = el('canvas');
 const debug = el('#debug');
 const time = el('#time');
@@ -122,9 +128,6 @@ input.update = delta => {
   debounceStats -= delta;
 };
 
-const FPS = new StatCache();
-const DRAW = new StatCache();
-
 let gameobjects = {
   obstacles: [],
   pickups: [],
@@ -163,14 +166,14 @@ function generateItem(collection, cargs) {
   return parent;
 }
 
-function trimItems(collection) {
+function trimItems(collection, force = false) {
   let skip = false;
   let pos;
   return gameobjects[collection].filter(item => {
-    if (skip) return true;
+    if (skip && !force) return true;
 
     pos = m4.getTranslation(item.localMatrix);
-    if (pos[2] <= 10) {
+    if (pos[2] <= 10 && !force) {
       skip = true;
       return item;
     }
@@ -208,8 +211,21 @@ function endGame(points) {
 
 function startGame() {
   popup.classList.toggle('hide');
-  running = true;
+  resetGameData();
   render();
+}
+
+function resetGameData() {
+  player.setMatrix();
+  gameobjects[obstacles] = trimItems('obstacles', true);
+  gameobjects[pickups] = trimItems('pickups', true);
+  gameobjects[boosts] = trimItems('boosts', true);
+  boost = 0;
+  pickupMultiplier = 0;
+  pickupCountdown = 0;
+  highScore = getScore();
+  points = 0;
+  running = true;
 }
 
 let oarg = { color: repeat([1, 0, 0, 1], 36) };
@@ -303,10 +319,11 @@ function render(timestamp = 0) {
     pickups: ${gameobjects[pickups].length}
     boosts: ${gameobjects[boosts].length}
     running: ${running}
-    time: parseInt(timestamp / 1000)
+    time: ${parseInt(timestamp / 1000)}
     boost: ${parseInt(boost)}
     multiplier: ${pickupMultiplier}
     pickup countdown: ${pickupCountdown}
+    highscore: ${highScore}
     points: ${points}
     `;
 
@@ -314,10 +331,13 @@ function render(timestamp = 0) {
       parseInt(timestamp / 1000) % 60
     )}:${formatTime(parseInt(timestamp) % 100)}`;
 
-    oldScore.innerText = `Top: ${points}`;
+    oldScore.innerText = `Top: ${points > highScore ? points : highScore}`;
     newScore.innerText = `Score: ${points}`;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);
 }
+
+// Start the game for the first time.
+resetGameData();
 render();

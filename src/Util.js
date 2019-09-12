@@ -52,7 +52,7 @@ export function storeScore(score) {
 
 export function getScore() {
   try {
-    return localStorage.getItem('score');
+    return localStorage.getItem('score') || 0;
   } catch (e) {
     return 0;
   }
