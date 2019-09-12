@@ -20,7 +20,7 @@ const BOOST_TIME = 200;
 
 let debounceStats = 0;
 let running = true;
-let points = 0;
+let points = getScore();
 let pickupCountdown = 0;
 let pickupMultiplier = 0;
 let boost = 0;
@@ -31,9 +31,12 @@ const debug = el('#debug');
 const time = el('#time');
 const oldScore = el('#old');
 const newScore = el('#new');
+const popup  = el('.popup');
+const replay  = el('#replay');
+
 const gl = canvas.getContext('webgl2');
 if (!gl) {
-  console.error('no gl context');
+  alert('Webgl2 is required to view this page. Please use another browser!');
 }
 
 const { Basic, MultiColored, Line, Lighted } = Shaders(gl);
@@ -215,6 +218,22 @@ function getAllComponents(component) {
   );
 }
 
+function endGame(points) {
+  let highScore = getScore();
+  if (points > highScore) {
+    storeScore(points);
+  }
+
+  popup.classList.toggle('hide');
+  replay.onclick = replay.onclick || startGame;
+}
+
+function startGame() {
+  popup.classList.toggle('hide');
+  running = true;
+  render();
+}
+
 let oarg = { color: repeat([1, 0, 0, 1], 36) };
 let parg = { color: repeat([0, 1, 0, 1], 36), scale: [0.5, 0.5, 0.5] };
 let barg = { color: repeat([1, 1, 0, 1], 36), scale: [0.3, 0.3, 0.3] };
@@ -263,8 +282,8 @@ const axis = new Axis({
 let lastRender = 0;
 let delta;
 let entities;
-(function render(timestamp = 0) {
-  if (!running) return storeScore(points);
+function render(timestamp = 0) {
+  if (!running) return endGame(points);
 
   delta = timestamp - lastRender;
 
@@ -322,4 +341,5 @@ let entities;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);
-})();
+}
+render();

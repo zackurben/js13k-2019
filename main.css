@@ -44,3 +44,17 @@ body {
 #debug {
   padding: 10px;
 }
+
+.popup {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  text-align: center;
+}
+
+#replay {
+  padding: 10px 20px;
+  border: 0;
+  font-family: monospace;
+  font-size: 2em;
+}
