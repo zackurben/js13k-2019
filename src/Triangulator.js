@@ -6,26 +6,21 @@ export default (faces, vertices, normal) => {
 
   faces.map((face, i) => {
     const [a, b, c, d] = face;
-    data.push(
-      [
-        vertices[a],
-        vertices[b],
-        vertices[c],
-        vertices[a],
-        vertices[c],
-        vertices[d]
-      ].flat()
-    );
+    data.push(vertices[a], vertices[b], vertices[c]);
+
+    // Adjust for missing normals
+    if (normal.length <= i) {
+      i = normal.length - 1;
+    }
 
     // Give each vertex in this face the same normals.
-    normals.push(
-      normal[i],
-      normal[i],
-      normal[i],
-      normal[i],
-      normal[i],
-      normal[i]
-    );
+    normals.push(normal[i], normal[i], normal[i]);
+
+    // If 4 faces are defined, build two triangles.
+    if (d !== undefined) {
+      data.push(vertices[a], vertices[c], vertices[d]);
+      normals.push(normal[i], normal[i], normal[i]);
+    }
   });
 
   data = data.flat();

@@ -151,7 +151,7 @@ export default gl => {
       // Use our pre configured VAO
       gl.bindVertexArray(obj.vao);
       gl.uniform3fv(attributes.u_ambient_light, [0.4, 0.4, 0.4]);
-      gl.uniform3fv(attributes.u_light, [10, 2, 0]);
+      gl.uniform3fv(attributes.u_light, [0, 1, 0]);
       gl.uniformMatrix4fv(attributes.u_model, false, obj.worldMatrix);
       gl.uniformMatrix4fv(attributes.u_view, false, camera.worldMatrix);
       gl.uniformMatrix4fv(

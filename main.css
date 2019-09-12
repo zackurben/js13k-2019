@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+}
+
+.container {
+  align-self: center;
+  position: absolute;
+}
+
+.hide {
+  display: none;
+}
+
+#stats {
+  top: 0;
+  position: absolute;
+  padding: 10px;
+  color: white;
+}
