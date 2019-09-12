@@ -16,7 +16,7 @@ import m4 from './Matrix';
 const RANDOM_SPEED = 1;
 const PICKUP_POINTS = 100;
 const PICKUP_TIME = 100;
-const BOOST_TIME = 100;
+const BOOST_TIME = 200;
 
 let debounceStats = 0;
 let running = true;
@@ -80,6 +80,7 @@ playerRender.physics = (delta, objects) => {
         world.removeComponent(other.parent);
       } else if (other.tag.startsWith('boosts')) {
         boost += BOOST_TIME;
+        world.removeComponent(other.parent);
       }
     });
 };

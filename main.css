@@ -1,13 +1,17 @@
 body {
-  margin: 0
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+}
+
+.container {
+  align-self: center;
+  position: absolute;
 }
 
 .hide {
   display: none;
-}
-
-.show {
-  display: block;
 }
 
 #stats {
