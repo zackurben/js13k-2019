@@ -12,8 +12,18 @@ import { radToDisplayDeg, displayMat } from './Util';
 import Input from './Input';
 import m4 from './Matrix';
 
-let RANDOM_SPEED = 1;
-let boost = 500;
+// CONFIG
+const RANDOM_SPEED = 1;
+const PICKUP_POINTS = 100;
+const PICKUP_TIME = 3000;
+const BOOST_TIME = 100;
+
+let running = true;
+let points = 0;
+let pickupCountdown = 0;
+let pickupMultiplier = 0;
+let boost = 0;
+
 const canvas = document.querySelector('canvas');
 const fps = document.querySelector('div#stats');
 const gl = canvas.getContext('webgl2');
@@ -42,6 +52,46 @@ const playerRender = new Cube({
   translation: [0, 0, 0],
   color: repeat([0.3, 0.1, 0.2, 1], 36)
 })
+playerRender.tag = 'player';
+playerRender.physics = (delta, objects) => {
+  let self = playerRender;
+
+  // If the localMatrix has changed, recalculate the bounding box
+  calculateBB(self);
+
+  objects.filter(o => o.id !== self.id && o.hasOwnProperty('boundingbox')).forEach(other => {
+    if (!other.rigid) return;
+    if (!['obstacles', 'pickups', 'boosts'].includes(other.tag)) return;
+
+    // update objects bounding boxes
+    calculateBB(other);
+
+    if (!self.intersects(other)) return;
+
+    if (other.tag.startsWith('obstacle')) {
+      running = false;
+    }
+    else if (other.tag.startsWith('pickup')) {
+      pickupMultiplier += 0.1;
+      pickupCountdown = PICKUP_TIME;
+      points += (PICKUP_POINTS * pickupMultiplier);
+      world.removeComponent(other.parent);
+    }
+    else if (other.tag.startsWith('boosts')) {
+      boost += BOOST_TIME;
+    }
+  });
+}
+
+function calculateBB(item) {
+  // If the localMatrix has changed, recalculate the bounding box
+  if (item._worldMatrix != item.worldMatrix) {
+    item._worldMatrix = item.worldMatrix;
+    item.boundingbox = item.updateBoundingBox(
+      m4.getTranslation(item.worldMatrix)
+    );
+  }
+}
 
 input.update = delta => {
   const _rspeed = input.viewSpeed * (delta / 1000);
@@ -58,6 +108,11 @@ input.update = delta => {
 const FPS = new StatCache();
 const DRAW = new StatCache();
 
+let gameobjects = {
+  obstacles: [],
+  pickups: [],
+  boosts: [],
+};
 let obstacles = [];
 let pickups = [];
 let boosts = [];
@@ -83,14 +138,17 @@ function generateItem(collection, cargs) {
     ...cargs
   })
 
-  collection.push(parent)
+  child.rigid = true;
+  child.tag = collection;
+
+  gameobjects[collection].push(parent)
   return parent;
 }
 
 function trimItems(collection) {
   let skip = false;
   let pos;
-  return collection.filter(item => {
+  return gameobjects[collection].filter(item => {
     if (skip) return true;
 
     pos = m4.getTranslation(item.localMatrix)
@@ -120,6 +178,15 @@ function updateBoost(delta) {
   }
 }
 
+function updatePickupStats(delta) {
+  if (pickupCountdown > 0) {
+    pickupCountdown -= delta;
+  }
+  else {
+    pickupMultiplier = 1;
+  }
+}
+
 function repeat(item, num) {
   let out = [];
   for (let i = 0; i < num; i++) {
@@ -128,6 +195,12 @@ function repeat(item, num) {
 
   return out.flat();
 }
+
+function getAllComponents(component) {
+  return (component.components || []).concat(
+    (component.components || []).map(c => getAllComponents(c)).flat()
+  );
+};
 
 let oarg = {color: repeat([1, 0, 0, 1], 36)}
 let parg = {color: repeat([0, 1, 0, 1], 36), scale: [0.5, 0.5, 0.5]}
@@ -143,18 +216,9 @@ function generator(time) {
   oOdds = .004 * multiplier;
   pOdds = .004 * multiplier;
   
-  random(pOdds, () => generateItem(pickups, parg)) ||
-  random(oOdds, () => generateItem(obstacles, oarg)) ||
-  random(bOdds, () => generateItem(boosts, barg))
-}
-
-const n = new Node({
-  translation: [0, 0, -10],
-  parent: world
-})
-
-n.update = (delta) => {
-  n.localMatrix = m4.translate(n.localMatrix, 0, 0, delta/1000);
+  random(pOdds, () => generateItem('pickups', parg)) ||
+  random(oOdds, () => generateItem('obstacles', oarg)) ||
+  random(bOdds, () => generateItem('boosts', barg))
 }
 
 const floor = new Plane({
@@ -186,9 +250,15 @@ const axis = new Axis({
 // RENDER
 let lastRender = 0;
 let delta;
+let entities;
 (function render(timestamp = 0) {
+  if (!running) return;
+
   delta = timestamp - lastRender;
+
+  // Update game variables
   updateBoost(delta/10);
+  updatePickupStats(delta/10);
 
   // Define the viewport dimensions.
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -199,15 +269,17 @@ let delta;
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   world.updateWorldMatrix();
-  world.components.forEach(item => {
+  entities = getAllComponents(world);
+  entities.forEach(item => {
     if (item.update) item.update(delta);
-    if (item.updateComponents) item.updateComponents(delta);
+    if (item.physics) item.physics(delta, entities);
     if (item.render) item.render({ camera });
   });
 
-  obstacles = trimItems(obstacles);
-  pickups = trimItems(pickups);
-  boosts = trimItems(boosts);
+  // Clean up all game objects
+  gameobjects[obstacles] = trimItems('obstacles');
+  gameobjects[pickups] = trimItems('pickups');
+  gameobjects[boosts] = trimItems('boosts');
   generator(timestamp);
 
   if (fps) {
@@ -218,15 +290,15 @@ let delta;
     fps: ${FPS.get()}
     world world: ${displayMat(world.worldMatrix)}
     player world: ${displayMat(player.worldMatrix)}
-    obstacles: ${obstacles.length}
-    pickups: ${pickups.length}
-    boosts: ${boosts.length}
+    obstacles: ${gameobjects[obstacles].length}
+    pickups: ${gameobjects[pickups].length}
+    boosts: ${gameobjects[boosts].length}
+    running: ${running}
     time: ${parseInt(timestamp / 1000)}
     boost: ${parseInt(boost)}
-    multiplier: ${multiplier}
-    bOdds: ${bOdds}
-    oOdds: ${oOdds}
-    pOdds: ${pOdds}
+    multiplier: ${pickupMultiplier}
+    pickup countdown: ${pickupCountdown}
+    points: ${points}
     `;
   }
   lastRender = timestamp;
