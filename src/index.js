@@ -8,7 +8,18 @@ import Shaders from './shaders';
 import Camera from './Camera';
 import Data from '../data/data.json';
 import Triangulation from './Triangulator';
-import { radToDisplayDeg, displayMat, formatTime, storeScore, getScore, getAllComponents, repeat, random, calculateBB, el } from './Util';
+import {
+  radToDisplayDeg,
+  displayMat,
+  formatTime,
+  storeScore,
+  getScore,
+  getAllComponents,
+  repeat,
+  random,
+  calculateBB,
+  el
+} from './Util';
 import Input from './Input';
 import m4 from './Matrix';
 
@@ -30,8 +41,8 @@ const debug = el('#debug');
 const time = el('#time');
 const oldScore = el('#old');
 const newScore = el('#new');
-const popup  = el('.popup');
-const replay  = el('#replay');
+const popup = el('.popup');
+const replay = el('#replay');
 
 const gl = canvas.getContext('webgl2');
 if (!gl) {
@@ -82,7 +93,7 @@ playerRender.physics = (delta, objects) => {
       } else if (other.tag.startsWith('pickup')) {
         pickupMultiplier += 0.1;
         pickupCountdown = PICKUP_TIME;
-        points = parseInt(points + (PICKUP_POINTS * pickupMultiplier));
+        points = parseInt(points + PICKUP_POINTS * pickupMultiplier);
         world.removeComponent(other.parent);
       } else if (other.tag.startsWith('boosts')) {
         boost += BOOST_TIME;

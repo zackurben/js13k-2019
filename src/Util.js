@@ -45,8 +45,7 @@ export function formatTime(i) {
 export function storeScore(score) {
   try {
     localStorage.setItem('score', score);
-  }
-  catch (e) {
+  } catch (e) {
     return score;
   }
 }
@@ -54,8 +53,7 @@ export function storeScore(score) {
 export function getScore() {
   try {
     return localStorage.getItem('score');
-  }
-  catch (e) {
+  } catch (e) {
     return 0;
   }
 }
