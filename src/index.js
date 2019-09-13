@@ -6,11 +6,7 @@ import Primitive from './Primitive';
 import Player from './Player';
 import Shaders from './shaders';
 import Camera from './Camera';
-import Data from '../data/data.json';
-import Triangulation from './Triangulator';
 import {
-  radToDisplayDeg,
-  displayMat,
   formatTime,
   storeScore,
   getScore,
@@ -122,7 +118,13 @@ playerRender.physics = (delta, objects) => {
 input.update = delta => {
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
-  player.localMatrix = m4.translate(player.localMatrix, ...movement);
+  const out = m4.translate(player.localMatrix, ...movement);
+  
+  // Restrict the players movements
+  let [x, y, z] = m4.getTranslation(out);
+  if (x < 4 && x > -4) {
+    player.localMatrix = m4.translate(player.localMatrix, ...movement);
+  }
 
   let { Escape } = input.getKeys();
   if (debounceStats < 0 && Escape) {
