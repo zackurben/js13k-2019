@@ -4,7 +4,7 @@ const clean = require('clean-webpack-plugin');
 const html = require('html-webpack-plugin');
 const common = require('./webpack.common');
 const merge = require('webpack-merge');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
@@ -13,17 +13,23 @@ module.exports = merge(common, {
   devtool: false,
   optimization: {
     minimizer: [
-      new UglifyJsPlugin({
-        parallel: true,
-        uglifyOptions: {
-          ecma: 5,
-          compress: {
-            keep_fargs: false,
-            passes: 7
-          },
-          mangle: {},
-          toplevel: true
-        }
+      new TerserPlugin({
+        terserOptions: {
+          parallel: 4,
+          ecma: undefined,
+          warnings: false,
+          parse: {},
+          compress: {},
+          mangle: true,
+          module: false,
+          output: null,
+          toplevel: false,
+          nameCache: null,
+          ie8: false,
+          keep_classnames: undefined,
+          keep_fnames: false,
+          safari10: false,
+        },
       }),
       new OptimizeCssAssetsPlugin({
         assetNameRegExp: /\.css$/i,
@@ -35,7 +41,7 @@ module.exports = merge(common, {
       })
     ]
   },
-  plugins: [new MiniCssExtractPlugin(), new webpack.IgnorePlugin(/MapEditor/)],
+  plugins: [new MiniCssExtractPlugin()],
   module: {
     rules: [
       {
@@ -44,7 +50,7 @@ module.exports = merge(common, {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env', 'minify'],
+            presets: ['@babel/preset-env'],
             plugins: ['@babel/plugin-transform-runtime']
           }
         }
