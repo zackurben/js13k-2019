@@ -56,6 +56,16 @@ h1 {
   padding: 10px;
 }
 
+#music {
+  position: absolute;
+  right: 0;
+  bottom: 3px;
+}
+
+.off {
+  text-decoration: line-through;
+}
+
 .popup {
   position: absolute;
   top: 50%;
@@ -63,7 +73,7 @@ h1 {
   text-align: center;
 }
 
-#replay {
+.btn {
   padding: 10px 20px;
   border: 0;
   font-family: monospace;

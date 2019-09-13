@@ -16,10 +16,12 @@
   "author": "Zack Urben <zackurben@gmail.com>",
   "license": "MIT",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/zackurben/js13k-2019.git"
+    "type": "git",
+    "url": "https://github.com/zackurben/js13k-2019.git"
   },
-  "dependencies": {},
+  "dependencies": {
+    "beepbox": "^1.0.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/plugin-transform-runtime": "^7.5.5",
