@@ -30,13 +30,13 @@ h1 {
 }
 
 #stats, #debug {
-  top: 0;
   position: absolute;
   color: white;
 }
 
 #stats {
   width: 100%;
+  top: 0;
 }
 
 #time {
@@ -54,6 +54,7 @@ h1 {
 
 #debug {
   padding: 10px;
+  bottom: 0;
 }
 
 #music {

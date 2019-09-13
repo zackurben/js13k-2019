@@ -6,42 +6,28 @@ const vs = `#version 300 es
 in vec4 a_position;
 in vec4 a_color;
 in vec3 a_normal;
-
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
-
 out vec4 v_color;
 out vec3 v_normal;
-
 void main() {
   gl_Position = u_projection * inverse(u_view) * u_model * a_position;
-
   v_color = a_color;
   v_normal = mat3(u_model) * a_normal;
 }
 `;
 
 const fs = `#version 300 es
-// fragment shaders don't have a default precision so we need
-// to pick one. mediump is a good default. It means "medium precision"
 precision mediump float;
-
 in vec4 v_color;
 in vec3 v_normal;
-
 uniform vec3 u_light;
 uniform vec3 u_ambient_light;
-
 out vec4 outColor;
-
 void main() {
   float light = dot(normalize(u_light), normalize(v_normal));
-
   outColor = v_color;
-
-  // Lets multiply just the color portion (not the alpha)
-  // by the light
   outColor.rgb *= light + u_ambient_light;
 }
 `;
