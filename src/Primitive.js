@@ -149,7 +149,7 @@ export class Node {
   }
 }
 
-export default ({ gl, Basic, Line }) => {
+export default ({ gl, Basic }) => {
   class Primitive extends Node {
     constructor({
       translation,
@@ -483,110 +483,10 @@ export default ({ gl, Basic, Line }) => {
     }
   }
 
-  class Axis extends Primitive {
-    constructor(args) {
-      super({
-        data: [
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          1,
-
-          0,
-          0,
-          0,
-          -1,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          -1,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          -1
-        ],
-        color: [
-          1,
-          0,
-          0,
-          1,
-          1,
-          0,
-          0,
-          1,
-          0,
-          1,
-          0,
-          1,
-          0,
-          1,
-          0,
-          1,
-          0,
-          0,
-          1,
-          1,
-          0,
-          0,
-          1,
-          1,
-
-          0.5,
-          0,
-          0,
-          1,
-          0.5,
-          0,
-          0,
-          1,
-          0,
-          0.5,
-          0,
-          1,
-          0,
-          0.5,
-          0,
-          1,
-          0,
-          0,
-          0.5,
-          1,
-          0,
-          0,
-          0.5,
-          1
-        ],
-        shader: Line,
-        ...args
-      });
-    }
-  }
-
   return {
     Node,
     Primitive,
     Cube,
-    Plane,
-    Axis
+    Plane
   };
 };

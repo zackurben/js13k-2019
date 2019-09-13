@@ -57,8 +57,8 @@ if (!gl) {
   alert('Webgl2 is required to view this page. Please use another browser!');
 }
 
-const { Basic, MultiColored, Line, Lighted } = Shaders(gl);
-const { Node, Cube, Plane, Axis } = Primitive({ Basic, Line });
+const { Basic, MultiColored, Lighted } = Shaders(gl);
+const { Node, Cube, Plane, Axis } = Primitive({ Basic });
 const world = new Node();
 const camera = new Camera({
   translation: [0, 2, 4],
@@ -307,10 +307,6 @@ const lWall = new Plane({
   rotation: [0, 0, 1],
   scale: [2, 3, 500],
   color: [0.3, 0.3, 0.3]
-});
-const axis = new Axis({
-  parent: world,
-  scale: [10, 10, 10]
 });
 
 // RENDER
