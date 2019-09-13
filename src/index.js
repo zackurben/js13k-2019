@@ -217,12 +217,11 @@ function getThemesong() {
 function toggleMusic() {
   if (audio.context.state === 'running') {
     audio.context.suspend();
-  }
-  else {
+  } else {
     audio.context.resume();
   }
 
-  music.classList.toggle('off')
+  music.classList.toggle('off');
 }
 
 function endGame(points) {
@@ -245,7 +244,7 @@ function startGame() {
 }
 
 function resetGameData() {
-  music.onclick  = music.onclick || toggleMusic;
+  music.onclick = music.onclick || toggleMusic;
   replay.onclick = replay.onclick || startGame;
 
   // Reset audio to begining on each data reset.
