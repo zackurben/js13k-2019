@@ -321,7 +321,7 @@ function render(timestamp = 0) {
     startOffset = timestamp;
   }
 
-  sessionTime = timestamp - startOffset;
+  sessionTime = timestamp - startOffset || 0;
   delta = timestamp - lastRender;
 
   // Update game variables
@@ -381,6 +381,7 @@ function render(timestamp = 0) {
   return requestAnimationFrame(render);
 }
 
-// Start the game for the first time.
+// Start the game for the first time and immediately pause it.
 resetGameData();
 render();
+running = false;
