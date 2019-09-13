@@ -35,6 +35,7 @@ const PICKUP_TIME = 100;
 const BOOST_TIME = 200;
 
 // GAME VARIABLES
+let sounds = new Audio();
 let audio;
 let debounceStats = 0;
 let running;
@@ -101,14 +102,19 @@ playerRender.physics = (delta, objects) => {
 
       if (other.tag.startsWith('obstacle')) {
         running = false;
+        sounds.note(440, 0.1);
+        sounds.note(311.13, 0.1, 0.1);
+        sounds.note(220.0, 0.4, 0.2);
       } else if (other.tag.startsWith('pickup')) {
         pickupMultiplier += 0.1;
         pickupCountdown = PICKUP_TIME;
         points = parseInt(points + PICKUP_POINTS * pickupMultiplier);
         world.removeComponent(other.parent);
+        sounds.note(440, 0.2);
       } else if (other.tag.startsWith('boosts')) {
         boost += BOOST_TIME;
         world.removeComponent(other.parent);
+        sounds.note(523.25, 0.3);
       }
     });
 };
