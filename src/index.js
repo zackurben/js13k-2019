@@ -57,7 +57,7 @@ if (!gl) {
   alert('Webgl2 is required to view this page. Please use another browser!');
 }
 
-const { Basic, MultiColored, Lighted } = Shaders(gl);
+const { Basic, Lighted } = Shaders(gl);
 const { Node, Cube, Plane, Axis } = Primitive({ Basic });
 const world = new Node();
 const camera = new Camera({
