@@ -22,6 +22,8 @@ import {
 } from './Util';
 import Input from './Input';
 import m4 from './Matrix';
+import Audio from 'beepbox';
+import song from '../theme.json';
 
 const FPS = new StatCache();
 const DRAW = new StatCache();
@@ -33,6 +35,8 @@ const PICKUP_TIME = 100;
 const BOOST_TIME = 200;
 
 // GAME VARIABLES
+let sounds = new Audio();
+let audio;
 let debounceStats = 0;
 let running;
 let highScore;
@@ -50,6 +54,7 @@ const oldScore = el('#old');
 const newScore = el('#new');
 const popup = el('.popup');
 const replay = el('#replay');
+const music = el('#music');
 
 const gl = canvas.getContext('webgl2');
 if (!gl) {
@@ -97,14 +102,19 @@ playerRender.physics = (delta, objects) => {
 
       if (other.tag.startsWith('obstacle')) {
         running = false;
+        sounds.note(440, 0.1);
+        sounds.note(311.13, 0.1, 0.1);
+        sounds.note(220.0, 0.4, 0.2);
       } else if (other.tag.startsWith('pickup')) {
         pickupMultiplier += 0.1;
         pickupCountdown = PICKUP_TIME;
         points = parseInt(points + PICKUP_POINTS * pickupMultiplier);
         world.removeComponent(other.parent);
+        sounds.note(440, 0.2);
       } else if (other.tag.startsWith('boosts')) {
         boost += BOOST_TIME;
         world.removeComponent(other.parent);
+        sounds.note(523.25, 0.3);
       }
     });
 };
@@ -200,14 +210,31 @@ function updatePickupStats(delta) {
   }
 }
 
+function getThemesong() {
+  return new Audio(song);
+}
+
+function toggleMusic() {
+  if (audio.context.state === 'running') {
+    audio.context.suspend();
+  } else {
+    audio.context.resume();
+  }
+
+  music.classList.toggle('off');
+}
+
 function endGame(points) {
   let highScore = getScore();
   if (points > highScore) {
     storeScore(points);
   }
+  if (audio.context.state === 'running') {
+    audio.context.suspend();
+    audio = getThemesong();
+  }
 
   popup.classList.toggle('hide');
-  replay.onclick = replay.onclick || startGame;
 }
 
 function startGame() {
@@ -217,6 +244,19 @@ function startGame() {
 }
 
 function resetGameData() {
+  music.onclick = music.onclick || toggleMusic;
+  replay.onclick = replay.onclick || startGame;
+
+  // Reset audio to begining on each data reset.
+  audio && audio.context.close();
+  audio = getThemesong();
+  audio.loop();
+
+  // Start playing theme if it was on
+  if (music.classList.contains('off')) {
+    audio.context.suspend();
+  }
+
   player.setMatrix();
   gameobjects[obstacles] = trimItems('obstacles', true);
   gameobjects[pickups] = trimItems('pickups', true);

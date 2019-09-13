@@ -15,12 +15,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       filename: path.resolve(__dirname, 'dist/index.html'),
       template: 'index.html'
-    })
-    // new CopyPlugin([
-    //   {
-    //     from: 'map.json',
-    //     to: path.resolve(__dirname, 'dist')
-    //   }
-    // ])
+    }),
+    new CopyPlugin([
+      {
+        from: 'theme.json',
+        to: path.resolve(__dirname, 'dist')
+      }
+    ])
   ]
 };
