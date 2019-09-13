@@ -120,12 +120,6 @@ playerRender.physics = (delta, objects) => {
 };
 
 input.update = delta => {
-  const _rspeed = input.viewSpeed * (delta / 1000);
-  const [x, y, z] = input.getRotation().map(i => (i *= _rspeed));
-  player.localMatrix = m4.multiply(player.localMatrix, m4.xRotation(x));
-  player.localMatrix = m4.multiply(player.localMatrix, m4.yRotation(y));
-  player.localMatrix = m4.multiply(player.localMatrix, m4.zRotation(z));
-
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
   player.localMatrix = m4.translate(player.localMatrix, ...movement);
