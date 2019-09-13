@@ -1,12 +1,27 @@
+* {
+  font-family: monospace;
+}
+
 body {
   margin: 0;
-  display: flex;
-  justify-content: center;
   height: 100vh;
+  background-color: #ccc;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column
+}
+
+h1 {
+  text-align: center;
+  font-size: 3em;
 }
 
 .container {
-  align-self: center;
+  display: flex;
+  justify-content: center;
+}
+
+.game {
   position: absolute;
 }
 
@@ -14,9 +29,43 @@ body {
   display: none;
 }
 
+#stats, #debug {
+  top: 0;
+  position: absolute;
+  color: white;
+}
+
 #stats {
+  width: 100%;
+}
+
+#time {
+  text-align: center;
+  font-size: 4em;
+}
+
+#old, #new {
+  right: 0;
   top: 0;
   position: absolute;
   padding: 10px;
-  color: white;
+  font-size: 2em;
+}
+
+#debug {
+  padding: 10px;
+}
+
+.popup {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  text-align: center;
+}
+
+#replay {
+  padding: 10px 20px;
+  border: 0;
+  font-family: monospace;
+  font-size: 2em;
 }

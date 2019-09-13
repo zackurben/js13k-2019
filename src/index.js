@@ -8,28 +8,52 @@ import Shaders from './shaders';
 import Camera from './Camera';
 import Data from '../data/data.json';
 import Triangulation from './Triangulator';
-import { radToDisplayDeg, displayMat } from './Util';
+import {
+  radToDisplayDeg,
+  displayMat,
+  formatTime,
+  storeScore,
+  getScore,
+  getAllComponents,
+  repeat,
+  random,
+  calculateBB,
+  el
+} from './Util';
 import Input from './Input';
 import m4 from './Matrix';
 
-// CONFIG
+const FPS = new StatCache();
+const DRAW = new StatCache();
+
+// GAME CONFIGS
 const RANDOM_SPEED = 1;
 const PICKUP_POINTS = 100;
 const PICKUP_TIME = 100;
 const BOOST_TIME = 200;
 
+// GAME VARIABLES
 let debounceStats = 0;
-let running = true;
-let points = 0;
-let pickupCountdown = 0;
-let pickupMultiplier = 0;
-let boost = 0;
+let running;
+let highScore;
+let points;
+let pickupCountdown;
+let pickupMultiplier;
+let boost;
+let startOffset;
 
-const canvas = document.querySelector('canvas');
-const fps = document.querySelector('div#stats');
+// LAYOUT ELEMENTS
+const canvas = el('canvas');
+const debug = el('#debug');
+const time = el('#time');
+const oldScore = el('#old');
+const newScore = el('#new');
+const popup = el('.popup');
+const replay = el('#replay');
+
 const gl = canvas.getContext('webgl2');
 if (!gl) {
-  console.error('no gl context');
+  alert('Webgl2 is required to view this page. Please use another browser!');
 }
 
 const { Basic, MultiColored, Line, Lighted } = Shaders(gl);
@@ -44,7 +68,7 @@ const input = Input({ canvas });
 const player = new Player({
   parent: world,
   components: [camera, input],
-  translation: [0, 0, 0],
+  translation: [0, 0.5, 0],
   rotation: [0, 0, 0]
 });
 const playerRender = new Cube({
@@ -76,7 +100,7 @@ playerRender.physics = (delta, objects) => {
       } else if (other.tag.startsWith('pickup')) {
         pickupMultiplier += 0.1;
         pickupCountdown = PICKUP_TIME;
-        points += PICKUP_POINTS * pickupMultiplier;
+        points = parseInt(points + PICKUP_POINTS * pickupMultiplier);
         world.removeComponent(other.parent);
       } else if (other.tag.startsWith('boosts')) {
         boost += BOOST_TIME;
@@ -84,16 +108,6 @@ playerRender.physics = (delta, objects) => {
       }
     });
 };
-
-function calculateBB(item) {
-  // If the localMatrix has changed, recalculate the bounding box
-  if (item._worldMatrix != item.worldMatrix) {
-    item._worldMatrix = item.worldMatrix;
-    item.boundingbox = item.updateBoundingBox(
-      m4.getTranslation(item.worldMatrix)
-    );
-  }
-}
 
 input.update = delta => {
   const _rspeed = input.viewSpeed * (delta / 1000);
@@ -109,16 +123,11 @@ input.update = delta => {
   let { Escape } = input.getKeys();
   if (debounceStats < 0 && Escape) {
     debounceStats = 250;
-    document
-      .getElementById('stats')
-      .classList.toggle('hide')
+    el('#debug').classList.toggle('hide');
   }
 
   debounceStats -= delta;
 };
-
-const FPS = new StatCache();
-const DRAW = new StatCache();
 
 let gameobjects = {
   obstacles: [],
@@ -158,14 +167,14 @@ function generateItem(collection, cargs) {
   return parent;
 }
 
-function trimItems(collection) {
+function trimItems(collection, force = false) {
   let skip = false;
   let pos;
   return gameobjects[collection].filter(item => {
-    if (skip) return true;
+    if (skip && !force) return true;
 
     pos = m4.getTranslation(item.localMatrix);
-    if (pos[2] <= 10) {
+    if (pos[2] <= 10 && !force) {
       skip = true;
       return item;
     }
@@ -173,13 +182,6 @@ function trimItems(collection) {
     world.removeComponent(item);
     return false;
   });
-}
-
-function random(target, cb) {
-  let val = Math.random() ? Math.random() : Math.random();
-  if (val < target) {
-    return cb();
-  }
 }
 
 function updateBoost(delta) {
@@ -198,19 +200,34 @@ function updatePickupStats(delta) {
   }
 }
 
-function repeat(item, num) {
-  let out = [];
-  for (let i = 0; i < num; i++) {
-    out = out.concat(item);
+function endGame(points) {
+  let highScore = getScore();
+  if (points > highScore) {
+    storeScore(points);
   }
 
-  return out.flat();
+  popup.classList.toggle('hide');
+  replay.onclick = replay.onclick || startGame;
 }
 
-function getAllComponents(component) {
-  return (component.components || []).concat(
-    (component.components || []).map(c => getAllComponents(c)).flat()
-  );
+function startGame() {
+  popup.classList.toggle('hide');
+  resetGameData();
+  render();
+}
+
+function resetGameData() {
+  player.setMatrix();
+  gameobjects[obstacles] = trimItems('obstacles', true);
+  gameobjects[pickups] = trimItems('pickups', true);
+  gameobjects[boosts] = trimItems('boosts', true);
+  boost = 0;
+  pickupMultiplier = 0;
+  pickupCountdown = 0;
+  highScore = getScore();
+  points = 0;
+  startOffset = undefined;
+  running = true;
 }
 
 let oarg = { color: repeat([1, 0, 0, 1], 36) };
@@ -252,7 +269,6 @@ const lWall = new Plane({
   scale: [2, 3, 500],
   color: [0.3, 0.3, 0.3]
 });
-
 const axis = new Axis({
   parent: world,
   scale: [10, 10, 10]
@@ -262,9 +278,14 @@ const axis = new Axis({
 let lastRender = 0;
 let delta;
 let entities;
-(function render(timestamp = 0) {
-  if (!running) return;
+let sessionTime = 0;
+function render(timestamp = 0) {
+  if (!running) return endGame(points);
+  if (startOffset === undefined && timestamp !== 0) {
+    startOffset = timestamp;
+  }
 
+  sessionTime = timestamp - startOffset;
   delta = timestamp - lastRender;
 
   // Update game variables
@@ -291,27 +312,39 @@ let entities;
   gameobjects[obstacles] = trimItems('obstacles');
   gameobjects[pickups] = trimItems('pickups');
   gameobjects[boosts] = trimItems('boosts');
-  generator(timestamp);
+  generator(sessionTime);
 
-  if (fps) {
+  if (debug) {
     FPS.add(1000 / delta);
     DRAW.add(delta);
 
-    fps.innerText = `frame ms: ${DRAW.get()}
+    debug.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
-    world world: ${displayMat(world.worldMatrix)}
-    player world: ${displayMat(player.worldMatrix)}
     obstacles: ${gameobjects[obstacles].length}
     pickups: ${gameobjects[pickups].length}
     boosts: ${gameobjects[boosts].length}
     running: ${running}
     time: ${parseInt(timestamp / 1000)}
+    sessionTime: ${parseInt(sessionTime / 1000)}
+    startOffset: ${startOffset}
     boost: ${parseInt(boost)}
     multiplier: ${pickupMultiplier}
     pickup countdown: ${pickupCountdown}
+    highscore: ${highScore}
     points: ${points}
     `;
+
+    time.innerText = `${formatTime(parseInt(sessionTime / 60000))}:${formatTime(
+      parseInt(sessionTime / 1000) % 60
+    )}:${formatTime(parseInt(sessionTime) % 100)}`;
+
+    oldScore.innerText = `Top: ${points > highScore ? points : highScore}`;
+    newScore.innerText = `Score: ${points}`;
   }
   lastRender = timestamp;
   return requestAnimationFrame(render);
-})();
+}
+
+// Start the game for the first time.
+resetGameData();
+render();
