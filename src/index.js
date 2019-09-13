@@ -27,7 +27,7 @@ const DRAW = new StatCache();
 // GAME CONFIGS
 const RANDOM_SPEED = 1;
 const PICKUP_POINTS = 100;
-const PICKUP_TIME = 100;
+const PICKUP_TIME = 200;
 const BOOST_TIME = 200;
 
 // GAME VARIABLES
@@ -104,7 +104,9 @@ playerRender.physics = (delta, objects) => {
       } else if (other.tag.startsWith('pickup')) {
         pickupMultiplier += 0.1;
         pickupCountdown = PICKUP_TIME;
-        points = parseInt(points + PICKUP_POINTS * pickupMultiplier);
+        points = parseInt(
+          points + PICKUP_POINTS * pickupMultiplier * (boost > 0 ? 2 : 1)
+        );
         world.removeComponent(other.parent);
         sounds.note(440, 0.2);
       } else if (other.tag.startsWith('boosts')) {
@@ -119,7 +121,7 @@ input.update = delta => {
   const _speed = player.speed * (delta / 1000);
   const movement = input.getMovement().map(i => i * _speed);
   const out = m4.translate(player.localMatrix, ...movement);
-  
+
   // Restrict the players movements
   let [x, y, z] = m4.getTranslation(out);
   if (x < 4 && x > -4) {
@@ -144,7 +146,7 @@ let obstacles = [];
 let pickups = [];
 let boosts = [];
 function generateItem(collection, cargs, time) {
-  let zLoc = time < 10000 ? ((time / 10000) * -80) + -20 : -100;
+  let zLoc = time < 10000 ? (time / 10000) * -80 + -20 : -100;
   let parent = new Node({
     parent: world,
     translation: [Math.random() * 9 - 4.5, 0.5, zLoc]
@@ -275,7 +277,7 @@ let oOdds = 0;
 let pOdds = 0;
 let multiplier = 1;
 function generator(time) {
-  multiplier = (boost > 0 ? 2 : 1) + 0.3 * (time / 30000);
+  multiplier = (boost > 0 ? 2 : 1) + 0.5 * (time / 15000);
 
   bOdds = 0.002 * multiplier;
   oOdds = 0.004 * multiplier;
@@ -365,7 +367,8 @@ function render(timestamp = 0) {
     sessionTime: ${parseInt(sessionTime / 1000)}
     startOffset: ${startOffset}
     boost: ${parseInt(boost)}
-    multiplier: ${pickupMultiplier}
+    multiplier: ${multiplier}
+    pickup multiplier: ${pickupMultiplier}
     pickup countdown: ${pickupCountdown}
     highscore: ${highScore}
     points: ${points}

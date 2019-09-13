@@ -1,10 +1,6 @@
 'use strict';
 
-export default ({
-  right = 'ArrowRight',
-  left = 'ArrowLeft',
-  canvas
-} = {}) => {
+export default ({ right = 'ArrowRight', left = 'ArrowLeft', canvas } = {}) => {
   let keys = {};
 
   document.addEventListener('keydown', e => {
