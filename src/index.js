@@ -34,12 +34,13 @@ const BOOST_TIME = 200;
 
 // GAME VARIABLES
 let debounceStats = 0;
-let running; // = true;
-let highScore; // = getScore();
-let points; // = 0;
-let pickupCountdown; // = 0;
-let pickupMultiplier; // = 0;
-let boost; // = 0;
+let running;
+let highScore;
+let points;
+let pickupCountdown;
+let pickupMultiplier;
+let boost;
+let startOffset;
 
 // LAYOUT ELEMENTS
 const canvas = el('canvas');
@@ -225,6 +226,7 @@ function resetGameData() {
   pickupCountdown = 0;
   highScore = getScore();
   points = 0;
+  startOffset = undefined;
   running = true;
 }
 
@@ -276,9 +278,14 @@ const axis = new Axis({
 let lastRender = 0;
 let delta;
 let entities;
+let sessionTime = 0;
 function render(timestamp = 0) {
   if (!running) return endGame(points);
+  if (startOffset === undefined && timestamp !== 0) {
+    startOffset = timestamp;
+  }
 
+  sessionTime = timestamp - startOffset;
   delta = timestamp - lastRender;
 
   // Update game variables
@@ -305,7 +312,7 @@ function render(timestamp = 0) {
   gameobjects[obstacles] = trimItems('obstacles');
   gameobjects[pickups] = trimItems('pickups');
   gameobjects[boosts] = trimItems('boosts');
-  generator(timestamp);
+  generator(sessionTime);
 
   if (debug) {
     FPS.add(1000 / delta);
@@ -313,13 +320,13 @@ function render(timestamp = 0) {
 
     debug.innerText = `frame ms: ${DRAW.get()}
     fps: ${FPS.get()}
-    world world: ${displayMat(world.worldMatrix)}
-    player world: ${displayMat(player.worldMatrix)}
     obstacles: ${gameobjects[obstacles].length}
     pickups: ${gameobjects[pickups].length}
     boosts: ${gameobjects[boosts].length}
     running: ${running}
     time: ${parseInt(timestamp / 1000)}
+    sessionTime: ${parseInt(sessionTime / 1000)}
+    startOffset: ${startOffset}
     boost: ${parseInt(boost)}
     multiplier: ${pickupMultiplier}
     pickup countdown: ${pickupCountdown}
@@ -327,9 +334,9 @@ function render(timestamp = 0) {
     points: ${points}
     `;
 
-    time.innerText = `${formatTime(parseInt(timestamp / 60000))}:${formatTime(
-      parseInt(timestamp / 1000) % 60
-    )}:${formatTime(parseInt(timestamp) % 100)}`;
+    time.innerText = `${formatTime(parseInt(sessionTime / 60000))}:${formatTime(
+      parseInt(sessionTime / 1000) % 60
+    )}:${formatTime(parseInt(sessionTime) % 100)}`;
 
     oldScore.innerText = `Top: ${points > highScore ? points : highScore}`;
     newScore.innerText = `Score: ${points}`;
