@@ -143,10 +143,11 @@ let gameobjects = {
 let obstacles = [];
 let pickups = [];
 let boosts = [];
-function generateItem(collection, cargs) {
+function generateItem(collection, cargs, time) {
+  let zLoc = time < 10000 ? ((time / 10000) * -80) + -20 : -100;
   let parent = new Node({
     parent: world,
-    translation: [Math.random() * 9 - 4.5, 0.5, -100]
+    translation: [Math.random() * 9 - 4.5, 0.5, zLoc]
   });
 
   let speed = RANDOM_SPEED ? 50 + Math.random() * 50 : 100;
@@ -278,11 +279,11 @@ function generator(time) {
 
   bOdds = 0.002 * multiplier;
   oOdds = 0.004 * multiplier;
-  pOdds = 0.004 * multiplier;
+  pOdds = 0.006 * multiplier;
 
-  random(pOdds, () => generateItem('pickups', parg)) ||
-    random(oOdds, () => generateItem('obstacles', oarg)) ||
-    random(bOdds, () => generateItem('boosts', barg));
+  random(pOdds, () => generateItem('pickups', parg, time)) ||
+    random(oOdds, () => generateItem('obstacles', oarg, time)) ||
+    random(bOdds, () => generateItem('boosts', barg, time));
 }
 
 const floor = new Plane({
